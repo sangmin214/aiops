@@ -37,6 +37,10 @@ const deepseek = new OpenAI({
 const knowledgeRoutes = require('./knowledge/routes');
 app.use('/api', knowledgeRoutes);
 
+// 组件依赖关系路由
+const componentRoutes = require('./component/routes');
+app.use('/api/component', componentRoutes);
+
 // 导入向量搜索功能
 const { searchSimilarEntries } = require('./knowledge/qdrant');
 const { generateEmbedding } = require('./knowledge/embedding');
