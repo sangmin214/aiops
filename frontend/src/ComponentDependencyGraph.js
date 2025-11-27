@@ -155,7 +155,7 @@ const ComponentDependencyGraph = () => {
   // 监听图表数据变化
   useEffect(() => {
     handleGraphUpdate();
-  }, [graphData]);
+  }, [graphData, handleGraphUpdate]);
 
   // 手动居中图表
   const centerGraph = () => {

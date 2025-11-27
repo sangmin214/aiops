@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import ProblemInput from './components/ProblemInput';
 import SolutionDisplay from './components/SolutionDisplay';
 import KnowledgeBase from './components/KnowledgeBase';
-import ComponentDependencyGraph from './ComponentDependencyGraph';
-import SimpleDependencyGraph from './SimpleDependencyGraph';
 import DependencyGraphTabs from './DependencyGraphTabs';
 import AddComponentDependency from './AddComponentDependency';
 
