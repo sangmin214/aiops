@@ -471,42 +471,101 @@ const AddComponentDependency = () => {
         
         <div style={{ marginBottom: '20px' }}>
           <h3>创建新的组件关系</h3>
-          <div style={{ marginBottom: '10px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>上游组件:</label>
-            <select
-              name="upstreamComponent"
-              value={formData.upstreamComponent}
-              onChange={handleInputChange}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-            >
-              <option value="">请选择上游组件</option>
-              {filteredComponents.map(component => (
-                <option key={component.id} value={component.name}>
-                  {component.name} ({component.type})
-                </option>
-              ))}
-            </select>
-          </div>
           
-          <div style={{ marginBottom: '10px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>关系类型:</label>
-            <select
-              name="relationType"
-              value={formData.relationType}
-              onChange={handleInputChange}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-            >
-              <option value="data_flow">数据流</option>
-              <option value="dependency">依赖</option>
-              <option value="trigger">触发</option>
-              <option value="notification">通知</option>
-              <option value="other">其他</option>
-            </select>
-          </div>
-          
-          <p style={{ color: '#6c757d', fontSize: '14px', marginTop: '10px' }}>
-            注意：当前正在编辑的组件将自动作为下游组件
-          </p>
+          {editingComponent ? (
+            // 编辑模式：只需要上游组件
+            <>
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', marginBottom: '5px' }}>上游组件:</label>
+                <select
+                  name="upstreamComponent"
+                  value={formData.upstreamComponent}
+                  onChange={handleInputChange}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                >
+                  <option value="">请选择上游组件</option>
+                  {filteredComponents.map(component => (
+                    <option key={component.id} value={component.name}>
+                      {component.name} ({component.type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', marginBottom: '5px' }}>关系类型:</label>
+                <select
+                  name="relationType"
+                  value={formData.relationType}
+                  onChange={handleInputChange}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                >
+                  <option value="data_flow">数据流</option>
+                  <option value="dependency">依赖</option>
+                  <option value="trigger">触发</option>
+                  <option value="notification">通知</option>
+                  <option value="other">其他</option>
+                </select>
+              </div>
+              
+              <p style={{ color: '#6c757d', fontSize: '14px', marginTop: '10px' }}>
+                注意：当前正在编辑的组件将自动作为下游组件
+              </p>
+            </>
+          ) : (
+            // 创建模式：需要上游和下游组件
+            <>
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', marginBottom: '5px' }}>上游组件:</label>
+                <select
+                  name="upstreamComponent"
+                  value={formData.upstreamComponent}
+                  onChange={handleInputChange}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                >
+                  <option value="">请选择上游组件</option>
+                  {components.map(component => (
+                    <option key={component.id} value={component.name}>
+                      {component.name} ({component.type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', marginBottom: '5px' }}>下游组件:</label>
+                <select
+                  name="downstreamComponent"
+                  value={formData.downstreamComponent}
+                  onChange={handleInputChange}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                >
+                  <option value="">请选择下游组件</option>
+                  {components.map(component => (
+                    <option key={component.id} value={component.name}>
+                      {component.name} ({component.type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', marginBottom: '5px' }}>关系类型:</label>
+                <select
+                  name="relationType"
+                  value={formData.relationType}
+                  onChange={handleInputChange}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                >
+                  <option value="data_flow">数据流</option>
+                  <option value="dependency">依赖</option>
+                  <option value="trigger">触发</option>
+                  <option value="notification">通知</option>
+                  <option value="other">其他</option>
+                </select>
+              </div>
+            </>
+          )}
         </div>
         
         <div style={{ display: 'flex', gap: '10px' }}>
