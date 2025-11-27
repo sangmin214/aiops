@@ -371,9 +371,8 @@ const ComponentDependencyGraph = () => {
         <ForceGraph2D
           graphData={graphData}
           nodeLabel={node => `${node.name} (${node.type})`}
-          nodeColor={node => node.color || '#999999'}
-          nodeVal={node => 8}
-          nodeRelSize={6}
+          nodeVal={node => 12}
+          nodeRelSize={8}
           linkDirectionalArrowLength={6}
           linkDirectionalArrowRelPos={1}
           linkLabel={link => link.relationType || '关联'}
@@ -389,7 +388,7 @@ const ComponentDependencyGraph = () => {
           d3AlphaMin={0.01}
           d3AlphaDecay={0.01}
           nodeCanvasObject={(node, ctx, globalScale) => {
-            const label = node.name;
+            const label = `${node.name} (${node.type})`;
             const fontSize = 12/globalScale;
             ctx.font = `${fontSize}px Sans-Serif`;
             const textWidth = ctx.measureText(label).width;
@@ -397,23 +396,43 @@ const ComponentDependencyGraph = () => {
 
             // 根据节点类型设置不同的背景和边框
             if (node.color === '#ff0000') { // 中心节点
-              ctx.fillStyle = 'rgba(255, 0, 0, 0.9)'; // 红色背景
+              ctx.fillStyle = 'rgba(255, 0, 0, 1)'; // 红色背景
               ctx.strokeStyle = '#ffffff'; // 白色边框
               ctx.lineWidth = 2;
             } else {
-              ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; // 白色背景
+              ctx.fillStyle = 'rgba(255, 255, 255, 1)'; // 白色背景
               ctx.strokeStyle = node.color; // 彩色边框
-              ctx.lineWidth = 1;
+              ctx.lineWidth = 2;
             }
             
-            ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
-            ctx.strokeRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
+            // 绘制圆角矩形背景
+            const x = node.x - bckgDimensions[0] / 2;
+            const y = node.y - bckgDimensions[1] / 2;
+            const width = bckgDimensions[0];
+            const height = bckgDimensions[1];
+            const radius = 4;
+            
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            
+            ctx.fill();
+            ctx.stroke();
             
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             // 根据节点类型设置不同的文本颜色，使中心节点更突出
             if (node.color === '#ff0000') { // 中心节点使用白色文本以增强对比度
               ctx.fillStyle = '#ffffff';
+              ctx.font = `bold ${fontSize}px Sans-Serif`; // 加粗字体
             } else {
               ctx.fillStyle = node.color;
             }
