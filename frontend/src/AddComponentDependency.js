@@ -150,6 +150,50 @@ const AddComponentDependency = () => {
     }
   };
 
+  // 删除组件关系
+  const deleteComponentRelation = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/component/component-relations/${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+      
+      return true;
+    } catch (err) {
+      console.error('Error deleting component relation:', err);
+      throw err;
+    }
+  };
+
+  // 更新组件关系
+  const updateComponentRelation = async (id, relationData) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/component/component-relations/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(relationData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+      
+      const updatedRelation = await response.json();
+      return updatedRelation;
+    } catch (err) {
+      console.error('Error updating component relation:', err);
+      throw err;
+    }
+  };
+
+
   // 处理表单输入变化
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -171,6 +215,23 @@ const AddComponentDependency = () => {
     });
     setEditingComponent(component);
   };
+
+  // 编辑组件并回填依赖关系
+  const handleEditComponentWithDependencies = async (component) => {
+    // 设置基本组件信息
+    setFormData({
+      componentName: component.name,
+      componentType: component.type,
+      componentDescription: component.description || '',
+      upstreamComponent: '',
+      downstreamComponent: '',
+      relationType: 'data_flow'
+    });
+    
+    // 设置编辑状态
+    setEditingComponent(component);
+  };
+
 
   // 取消编辑
   const handleCancelEdit = () => {
@@ -293,6 +354,41 @@ const AddComponentDependency = () => {
                 </span>
               )}
             </label>
+            {editingComponent && (
+              <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '4px', fontSize: '14px' }}>
+                <strong>当前依赖关系:</strong>
+                <div style={{ display: 'flex', marginTop: '5px' }}>
+                  <div style={{ flex: 1, marginRight: '10px' }}>
+                    <div style={{ color: '#28a745', fontWeight: 'bold' }}>上游组件:</div>
+                    {editingComponent.upstream && editingComponent.upstream.length > 0 ? (
+                      <ul style={{ paddingLeft: '20px', margin: '5px 0 0 0' }}>
+                        {editingComponent.upstream.map((up, index) => (
+                          <li key={index}>
+                            {up.name} <span style={{ fontSize: '12px', color: '#6c757d' }}>({up.relationType})</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span style={{ color: '#6c757d' }}>无</span>
+                    )}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: '#007bff', fontWeight: 'bold' }}>下游组件:</div>
+                    {editingComponent.downstream && editingComponent.downstream.length > 0 ? (
+                      <ul style={{ paddingLeft: '20px', margin: '5px 0 0 0' }}>
+                        {editingComponent.downstream.map((down, index) => (
+                          <li key={index}>
+                            {down.name} <span style={{ fontSize: '12px', color: '#6c757d' }}>({down.relationType})</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span style={{ color: '#6c757d' }}>无</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
             <input
               type="text"
               name="componentName"
@@ -474,7 +570,7 @@ const AddComponentDependency = () => {
                   </td>
                   <td style={{ border: '1px solid #dee2e6', padding: '8px', textAlign: 'center' }}>
                     <button 
-                      onClick={() => handleEditComponent(component)}
+                      onClick={() => handleEditComponentWithDependencies(component)}
                       style={{ 
                         padding: '4px 8px', 
                         backgroundColor: '#ffc107', 

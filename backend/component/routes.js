@@ -179,6 +179,101 @@ router.delete('/components/:id', async (req, res) => {
   }
 });
 
+// 获取组件关系
+router.get('/component-relations/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const relation = await ComponentRelation.findByPk(id);
+    if (!relation) {
+      return res.status(404).json({ error: 'Component relation not found' });
+    }
+    res.json(relation);
+  } catch (error) {
+    console.error('Error fetching component relation:', error);
+    res.status(500).json({ error: 'Failed to fetch component relation' });
+  }
+});
+
+// 更新组件关系
+router.put('/component-relations/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { upstreamName, downstreamName, relationType } = req.body;
+    
+    const relation = await ComponentRelation.findByPk(id);
+    if (!relation) {
+      return res.status(404).json({ error: 'Component relation not found' });
+    }
+    
+    // 查找上游和下游组件
+    const upstreamComponent = await Component.findOne({ where: { name: upstreamName } });
+    const downstreamComponent = await Component.findOne({ where: { name: downstreamName } });
+    
+    if (!upstreamComponent || !downstreamComponent) {
+      return res.status(404).json({ error: 'Upstream or downstream component not found' });
+    }
+    
+    // 更新关系
+    await relation.update({
+      upstreamId: upstreamComponent.id,
+      downstreamId: downstreamComponent.id,
+      relationType
+    });
+    
+    res.json(relation);
+  } catch (error) {
+    console.error('Error updating component relation:', error);
+    res.status(500).json({ error: 'Failed to update component relation' });
+  }
+});
+
+// 删除组件关系
+router.delete('/component-relations/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const relation = await ComponentRelation.findByPk(id);
+    if (!relation) {
+      return res.status(404).json({ error: 'Component relation not found' });
+    }
+    
+    await relation.destroy();
+    res.json({ message: 'Component relation deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting component relation:', error);
+    res.status(500).json({ error: 'Failed to delete component relation' });
+  }
+});
+
+// 删除组件
+router.delete('/components/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const component = await Component.findByPk(id);
+    if (!component) {
+      return res.status(404).json({ error: 'Component not found' });
+    }
+    
+    // 删除相关的组件关系
+    await ComponentRelation.destroy({
+      where: {
+        [Op.or]: [
+          { upstreamId: id },
+          { downstreamId: id }
+        ]
+      }
+    });
+    
+    // 删除组件
+    await component.destroy();
+    res.json({ message: 'Component deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting component:', error);
+    res.status(500).json({ error: 'Failed to delete component' });
+  }
+});
+
 // 初始化数据库表
 router.post('/init-db', async (req, res) => {
   try {
