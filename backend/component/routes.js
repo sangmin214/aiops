@@ -37,6 +37,19 @@ router.post('/component-relations', async (req, res) => {
       return res.status(404).json({ error: `Downstream component '${downstreamName}' not found` });
     }
     
+    // 检查是否已存在相同的关系
+    const existingRelation = await ComponentRelation.findOne({
+      where: {
+        upstreamId: upstreamComponent.id,
+        downstreamId: downstreamComponent.id,
+        relationType: relationType
+      }
+    });
+      
+    if (existingRelation) {
+      return res.status(409).json({ error: 'Component relation already exists' });
+    }
+      
     // 创建关系
     const relation = await ComponentRelation.create({
       upstreamId: upstreamComponent.id,
@@ -208,6 +221,22 @@ router.delete('/components/:id', async (req, res) => {
   } catch (error) {
     console.error('Error deleting component:', error);
     res.status(500).json({ error: 'Failed to delete component' });
+  }
+});
+
+// 获取所有组件关系
+router.get('/component-relations', async (req, res) => {
+  try {
+    const relations = await ComponentRelation.findAll({
+      include: [
+        { model: Component, as: 'upstreamComponent' },
+        { model: Component, as: 'downstreamComponent' }
+      ]
+    });
+    res.json(relations);
+  } catch (error) {
+    console.error('Error fetching component relations:', error);
+    res.status(500).json({ error: 'Failed to fetch component relations' });
   }
 });
 
