@@ -3,7 +3,7 @@
 # 启动PostgreSQL容器
 docker run -d \
   --name aiops_postgresql \
-  -p 5432:5432 \
+  -p 5442:5432 \
   -e POSTGRES_USER=aiops_user \
   -e POSTGRES_PASSWORD=aiops_password \
   -e POSTGRES_DB=aiops_db \
@@ -13,7 +13,7 @@ docker run -d \
 
 echo "PostgreSQL container started successfully!"
 echo "Container name: aiops_postgresql"
-echo "Access port: 5432"
+echo "Access port: 5442"
 echo "Database: aiops_db"
 echo "Username: aiops_user"
 echo "Password: aiops_password"

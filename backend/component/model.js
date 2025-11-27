@@ -5,12 +5,12 @@ dotenv.config();
 
 // 创建PostgreSQL连接
 const sequelize = new Sequelize(
-  'aiops_db', 
-  'aiops_user', 
-  'aiops_password', 
+  process.env.DB_NAME || 'aiops_db',
+  process.env.DB_USER || 'aiops_user',
+  process.env.DB_PASSWORD || 'aiops_password',
   {
-    host: 'localhost',
-    port: 5432,
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5442,
     dialect: 'postgres',
     logging: false, // 设置为true可以查看SQL日志
   }

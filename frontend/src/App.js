@@ -141,19 +141,16 @@ function App() {
             </div>
           </div>
           
-          {/* 组件依赖关系管理 */}
+          {/* 添加组件依赖信息 */}
           <div className="mt-8 bg-white shadow-xl rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">组件依赖关系管理</h2>
-            
-            {/* 添加组件依赖信息 */}
-            <div className="mb-8">
-              <AddComponentDependency />
-            </div>
-            
-            {/* 组件依赖关系图 */}
-            <div>
-              <ComponentDependencyGraph />
-            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">添加组件依赖信息</h2>
+            <AddComponentDependency />
+          </div>
+          
+          {/* 组件依赖关系图 - 独立显示 */}
+          <div className="mt-8 bg-white shadow-xl rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">组件依赖关系图</h2>
+            <ComponentDependencyGraph />
           </div>
           
           <div className="mt-8 text-center text-sm text-gray-500">

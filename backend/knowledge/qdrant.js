@@ -3,7 +3,7 @@ const { QdrantClient } = require('@qdrant/js-client-rest');
 // 初始化Qdrant客户端，禁用版本检查
 const client = new QdrantClient({
   host: process.env.QDRANT_HOST || 'localhost',
-  port: process.env.QDRANT_PORT || 6333,
+  port: process.env.QDRANT_PORT || 6433,
   https: false,
   checkCompatibility: false, // 禁用版本兼容性检查
 });

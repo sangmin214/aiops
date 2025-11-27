@@ -23,8 +23,12 @@ initCollection();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// 中间件
-app.use(cors());
+// CORS配置 - 允许所有来源（生产环境中应该限制）
+app.use(cors({
+  origin: true, // 允许任何来源
+  credentials: true // 允许携带凭证
+}));
+
 app.use(express.json());
 
 // 初始化DeepSeek客户端
