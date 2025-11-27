@@ -105,14 +105,46 @@ router.get('/component-dependencies/:componentName', async (req, res) => {
   }
 });
 
-// 获取所有组件
+// 获取所有组件及其依赖关系
 router.get('/components', async (req, res) => {
   try {
     const components = await Component.findAll();
-    res.json(components);
+    
+    // 为每个组件获取依赖关系
+    const componentsWithDeps = await Promise.all(components.map(async (component) => {
+      // 获取上游关系
+      const upstreamRelations = await ComponentRelation.findAll({
+        where: { downstreamId: component.id },
+        include: [{ model: Component, as: 'upstreamComponent' }]
+      });
+      
+      // 获取下游关系
+      const downstreamRelations = await ComponentRelation.findAll({
+        where: { upstreamId: component.id },
+        include: [{ model: Component, as: 'downstreamComponent' }]
+      });
+      
+      return {
+        ...component.toJSON(),
+        upstream: upstreamRelations.map(relation => ({
+          id: relation.upstreamComponent.id,
+          name: relation.upstreamComponent.name,
+          type: relation.upstreamComponent.type,
+          relationType: relation.relationType
+        })),
+        downstream: downstreamRelations.map(relation => ({
+          id: relation.downstreamComponent.id,
+          name: relation.downstreamComponent.name,
+          type: relation.downstreamComponent.type,
+          relationType: relation.relationType
+        }))
+      };
+    }));
+    
+    res.json(componentsWithDeps);
   } catch (error) {
-    console.error('Error fetching components:', error);
-    res.status(500).json({ error: 'Failed to fetch components' });
+    console.error('Error fetching components with dependencies:', error);
+    res.status(500).json({ error: 'Failed to fetch components with dependencies' });
   }
 });
 
