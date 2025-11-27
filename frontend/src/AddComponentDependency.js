@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import componentTypes from './config/componentTypes';
 
 const AddComponentDependency = () => {
@@ -37,7 +37,10 @@ const AddComponentDependency = () => {
   };
 
   // 获取所有组件及其依赖关系
-  const fetchComponentsWithDependencies = async () => {
+
+
+  // 获取所有组件及其依赖关系
+  const fetchComponentsWithDependencies = useCallback(async () => {
     try {
       const response = await fetch('http://localhost:3001/api/component/components');
       const data = await response.json();
@@ -57,7 +60,7 @@ const AddComponentDependency = () => {
       console.error('Error fetching components with dependencies:', err);
       setError(`获取组件列表失败: ${err.message}`);
     }
-  };
+  }, []);
 
   // 创建新组件
   const createComponent = async (componentData) => {
@@ -213,22 +216,6 @@ const AddComponentDependency = () => {
       downstreamComponent: '',
       relationType: 'data_flow'
     });
-    setEditingComponent(component);
-  };
-
-  // 编辑组件并回填依赖关系
-  const handleEditComponentWithDependencies = async (component) => {
-    // 设置基本组件信息
-    setFormData({
-      componentName: component.name,
-      componentType: component.type,
-      componentDescription: component.description || '',
-      upstreamComponent: '',
-      downstreamComponent: '',
-      relationType: 'data_flow'
-    });
-    
-    // 设置编辑状态
     setEditingComponent(component);
   };
 
@@ -570,7 +557,7 @@ const AddComponentDependency = () => {
                   </td>
                   <td style={{ border: '1px solid #dee2e6', padding: '8px', textAlign: 'center' }}>
                     <button 
-                      onClick={() => handleEditComponentWithDependencies(component)}
+                      onClick={() => handleEditComponent(component)}
                       style={{ 
                         padding: '4px 8px', 
                         backgroundColor: '#ffc107', 
