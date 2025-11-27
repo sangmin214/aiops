@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Component, ComponentRelation, sequelize } = require('./model');
+const { Op } = require('sequelize');
 
 // 测试路由
 router.get('/test', (req, res) => {
@@ -112,6 +113,69 @@ router.get('/components', async (req, res) => {
   } catch (error) {
     console.error('Error fetching components:', error);
     res.status(500).json({ error: 'Failed to fetch components' });
+  }
+});
+
+// 获取单个组件
+router.get('/components/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const component = await Component.findByPk(id);
+    if (!component) {
+      return res.status(404).json({ error: 'Component not found' });
+    }
+    res.json(component);
+  } catch (error) {
+    console.error('Error fetching component:', error);
+    res.status(500).json({ error: 'Failed to fetch component' });
+  }
+});
+
+// 更新组件
+router.put('/components/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, type, description } = req.body;
+    
+    const component = await Component.findByPk(id);
+    if (!component) {
+      return res.status(404).json({ error: 'Component not found' });
+    }
+    
+    await component.update({ name, type, description });
+    res.json(component);
+  } catch (error) {
+    console.error('Error updating component:', error);
+    res.status(500).json({ error: 'Failed to update component' });
+  }
+});
+
+// 删除组件
+router.delete('/components/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const component = await Component.findByPk(id);
+    if (!component) {
+      return res.status(404).json({ error: 'Component not found' });
+    }
+    
+    // 删除相关的组件关系
+    await ComponentRelation.destroy({
+      where: {
+        [Op.or]: [
+          { upstreamId: id },
+          { downstreamId: id }
+        ]
+      }
+    });
+    
+    // 删除组件
+    await component.destroy();
+    res.json({ message: 'Component deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting component:', error);
+    res.status(500).json({ error: 'Failed to delete component' });
   }
 });
 

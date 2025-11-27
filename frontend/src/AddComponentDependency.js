@@ -16,6 +16,9 @@ const AddComponentDependency = () => {
     relationType: 'data_flow'
   });
 
+  // 编辑状态
+  const [editingComponent, setEditingComponent] = useState(null);
+
   // 获取所有组件
   const fetchComponents = async () => {
     try {
@@ -55,6 +58,49 @@ const AddComponentDependency = () => {
     }
   };
 
+  // 更新组件
+  const updateComponent = async (id, componentData) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/component/components/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(componentData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+      
+      const updatedComponent = await response.json();
+      return updatedComponent;
+    } catch (err) {
+      console.error('Error updating component:', err);
+      throw err;
+    }
+  };
+
+  // 删除组件
+  const deleteComponent = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/component/components/${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+      
+      return true;
+    } catch (err) {
+      console.error('Error deleting component:', err);
+      throw err;
+    }
+  };
+
   // 创建组件关系
   const createComponentRelation = async (relationData) => {
     try {
@@ -88,6 +134,45 @@ const AddComponentDependency = () => {
     }));
   };
 
+  // 编辑组件
+  const handleEditComponent = (component) => {
+    setFormData({
+      componentName: component.name,
+      componentType: component.type,
+      componentDescription: component.description || '',
+      upstreamComponent: '',
+      downstreamComponent: '',
+      relationType: 'data_flow'
+    });
+    setEditingComponent(component);
+  };
+
+  // 取消编辑
+  const handleCancelEdit = () => {
+    setEditingComponent(null);
+    setFormData({
+      componentName: '',
+      componentType: '',
+      componentDescription: '',
+      upstreamComponent: '',
+      downstreamComponent: '',
+      relationType: 'data_flow'
+    });
+  };
+
+  // 删除组件
+  const handleDeleteComponent = async (id) => {
+    if (window.confirm('确定要删除这个组件吗？')) {
+      try {
+        await deleteComponent(id);
+        setSuccess('组件删除成功！');
+        await fetchComponents(); // 刷新组件列表
+      } catch (err) {
+        setError(`删除失败: ${err.message}`);
+      }
+    }
+  };
+
   // 处理表单提交
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -96,14 +181,26 @@ const AddComponentDependency = () => {
     setSuccess('');
     
     try {
-      // 创建新组件（如果提供了组件名称）
+      // 创建或更新组件
       if (formData.componentName.trim()) {
-        await createComponent({
-          name: formData.componentName,
-          type: formData.componentType,
-          description: formData.componentDescription
-        });
-        setSuccess('组件创建成功！');
+        if (editingComponent) {
+          // 更新组件
+          await updateComponent(editingComponent.id, {
+            name: formData.componentName,
+            type: formData.componentType,
+            description: formData.componentDescription
+          });
+          setSuccess('组件更新成功！');
+          setEditingComponent(null); // 重置编辑状态
+        } else {
+          // 创建新组件
+          await createComponent({
+            name: formData.componentName,
+            type: formData.componentType,
+            description: formData.componentDescription
+          });
+          setSuccess('组件创建成功！');
+        }
       }
       
       // 创建组件关系（如果提供了上下游组件）
@@ -163,7 +260,14 @@ const AddComponentDependency = () => {
         <div style={{ marginBottom: '20px' }}>
           <h3>创建新组件</h3>
           <div style={{ marginBottom: '10px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>组件名称:</label>
+            <label style={{ display: 'block', marginBottom: '5px' }}>
+              组件名称:
+              {editingComponent && (
+                <span style={{ marginLeft: '10px', fontSize: '14px', color: '#007bff' }}>
+                  (编辑模式: {editingComponent.name})
+                </span>
+              )}
+            </label>
             <input
               type="text"
               name="componentName"
@@ -260,20 +364,39 @@ const AddComponentDependency = () => {
           </div>
         </div>
         
-        <button 
-          type="submit" 
-          disabled={loading}
-          style={{ 
-            padding: '10px 20px', 
-            backgroundColor: '#007bff', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '4px', 
-            cursor: loading ? 'not-allowed' : 'pointer'
-          }}
-        >
-          {loading ? '提交中...' : '提交'}
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            type="submit" 
+            disabled={loading}
+            style={{ 
+              padding: '10px 20px', 
+              backgroundColor: '#007bff', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '4px', 
+              cursor: loading ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {loading ? '提交中...' : editingComponent ? '更新组件' : '创建组件'}
+          </button>
+          {editingComponent && (
+            <button 
+              type="button" 
+              onClick={handleCancelEdit}
+              disabled={loading}
+              style={{ 
+                padding: '10px 20px', 
+                backgroundColor: '#6c757d', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '4px', 
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              取消编辑
+            </button>
+          )}
+        </div>
       </form>
       
       {/* 已有组件列表 */}
@@ -287,6 +410,7 @@ const AddComponentDependency = () => {
                 <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>名称</th>
                 <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>类型</th>
                 <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>描述</th>
+                <th style={{ border: '1px solid #dee2e6', padding: '8px', width: '120px' }}>操作</th>
               </tr>
             </thead>
             <tbody>
@@ -296,6 +420,35 @@ const AddComponentDependency = () => {
                   <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>{component.name}</td>
                   <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>{component.type}</td>
                   <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>{component.description || '-'}</td>
+                  <td style={{ border: '1px solid #dee2e6', padding: '8px', textAlign: 'center' }}>
+                    <button 
+                      onClick={() => handleEditComponent(component)}
+                      style={{ 
+                        padding: '4px 8px', 
+                        backgroundColor: '#ffc107', 
+                        color: 'black', 
+                        border: 'none', 
+                        borderRadius: '4px', 
+                        cursor: 'pointer',
+                        marginRight: '5px'
+                      }}
+                    >
+                      编辑
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteComponent(component.id)}
+                      style={{ 
+                        padding: '4px 8px', 
+                        backgroundColor: '#dc3545', 
+                        color: 'white', 
+                        border: 'none', 
+                        borderRadius: '4px', 
+                        cursor: 'pointer'
+                      }}
+                    >
+                      删除
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
