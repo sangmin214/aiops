@@ -45,17 +45,8 @@ const AddComponentDependency = () => {
       const response = await fetch('http://localhost:3001/api/component/components');
       const data = await response.json();
       
-      // 为每个组件获取依赖关系
-      const componentsWithDeps = await Promise.all(data.map(async (component) => {
-        const deps = await fetchComponentDependencies(component.name);
-        return {
-          ...component,
-          upstream: deps ? deps.upstream : [],
-          downstream: deps ? deps.downstream : []
-        };
-      }));
-      
-      setComponents(componentsWithDeps);
+      // 后端API已经返回了包含依赖关系的组件数据，直接使用即可
+      setComponents(data);
     } catch (err) {
       console.error('Error fetching components with dependencies:', err);
       setError(`获取组件列表失败: ${err.message}`);
