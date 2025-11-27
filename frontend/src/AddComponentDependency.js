@@ -261,26 +261,35 @@ const AddComponentDependency = () => {
         }
       }
       
-      // 创建组件关系（如果提供了上游组件）
-      if (formData.upstreamComponent) {
-        // 在编辑模式下，当前组件是下游组件
-        if (editingComponent) {
+      // 创建组件关系（如果提供了上游组件或下游组件）
+      if (editingComponent) {
+        // 在编辑模式下，当前组件可以作为上游或下游组件
+        if (formData.upstreamComponent) {
           await createComponentRelation({
             upstreamName: formData.upstreamComponent,
             downstreamName: editingComponent.name,
             relationType: formData.relationType
           });
-          setSuccess(prev => prev ? prev + ' 关系创建成功！' : '关系创建成功！');
-        } 
-        // 在创建模式下，需要提供下游组件
-        else if (formData.downstreamComponent) {
+          setSuccess(prev => prev ? prev + ' 上游关系创建成功！' : '上游关系创建成功！');
+        }
+        
+        if (formData.downstreamComponent) {
           await createComponentRelation({
-            upstreamName: formData.upstreamComponent,
+            upstreamName: editingComponent.name,
             downstreamName: formData.downstreamComponent,
             relationType: formData.relationType
           });
-          setSuccess(prev => prev ? prev + ' 关系创建成功！' : '关系创建成功！');
+          setSuccess(prev => prev ? prev + ' 下游关系创建成功！' : '下游关系创建成功！');
         }
+      } 
+      // 在创建模式下，需要提供上游和下游组件
+      else if (formData.upstreamComponent && formData.downstreamComponent) {
+        await createComponentRelation({
+          upstreamName: formData.upstreamComponent,
+          downstreamName: formData.downstreamComponent,
+          relationType: formData.relationType
+        });
+        setSuccess(prev => prev ? prev + ' 关系创建成功！' : '关系创建成功！');
       }
       
       // 刷新组件列表
@@ -484,6 +493,23 @@ const AddComponentDependency = () => {
               </div>
               
               <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', marginBottom: '5px' }}>下游组件:</label>
+                <select
+                  name="downstreamComponent"
+                  value={formData.downstreamComponent}
+                  onChange={handleInputChange}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                >
+                  <option value="">请选择下游组件</option>
+                  {filteredComponents.map(component => (
+                    <option key={component.id} value={component.name}>
+                      {component.name} ({component.type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div style={{ marginBottom: '10px' }}>
                 <label style={{ display: 'block', marginBottom: '5px' }}>关系类型:</label>
                 <select
                   name="relationType"
@@ -500,7 +526,7 @@ const AddComponentDependency = () => {
               </div>
               
               <p style={{ color: '#6c757d', fontSize: '14px', marginTop: '10px' }}>
-                注意：当前正在编辑的组件将自动作为下游组件
+                注意：当前正在编辑的组件将自动作为上游或下游组件
               </p>
             </>
           ) : (
