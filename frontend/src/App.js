@@ -3,6 +3,7 @@ import ProblemInput from './components/ProblemInput';
 import SolutionDisplay from './components/SolutionDisplay';
 import KnowledgeBase from './components/KnowledgeBase';
 import ComponentDependencyGraph from './ComponentDependencyGraph';
+import SimpleDependencyGraph from './SimpleDependencyGraph';
 import AddComponentDependency from './AddComponentDependency';
 
 function App() {
@@ -151,6 +152,12 @@ function App() {
           <div className="mt-8 bg-white shadow-xl rounded-lg p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">组件依赖关系图</h2>
             <ComponentDependencyGraph />
+          </div>
+          
+          {/* 简化版组件依赖关系图 - 独立显示 */}
+          <div className="mt-8 bg-white shadow-xl rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">简化版组件依赖关系图</h2>
+            <SimpleDependencyGraph />
           </div>
           
           <div className="mt-8 text-center text-sm text-gray-500">
