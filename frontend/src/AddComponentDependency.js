@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import componentTypes from './config/componentTypes';
 
 const AddComponentDependency = () => {
   const [components, setComponents] = useState([]);
@@ -287,14 +288,11 @@ const AddComponentDependency = () => {
               style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
             >
               <option value="">请选择组件类型</option>
-              <option value="Queue">队列</option>
-              <option value="Service">服务</option>
-              <option value="Database">数据库</option>
-              <option value="Storage">存储</option>
-              <option value="API">API</option>
-              <option value="Gateway">网关</option>
-              <option value="Cache">缓存</option>
-              <option value="Other">其他</option>
+              {componentTypes.map(type => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
             </select>
           </div>
           
