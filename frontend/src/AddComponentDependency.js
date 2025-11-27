@@ -35,6 +35,44 @@ const AddComponentDependency = () => {
     }
   };
 
+  // 获取组件的依赖关系
+  const fetchComponentDependencies = async (componentName) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/component/component-dependencies/${componentName}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return data;
+    } catch (err) {
+      console.error('Error fetching component dependencies:', err);
+      return null;
+    }
+  };
+
+  // 获取所有组件及其依赖关系
+  const fetchComponentsWithDependencies = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/component/components');
+      const data = await response.json();
+      
+      // 为每个组件获取依赖关系
+      const componentsWithDeps = await Promise.all(data.map(async (component) => {
+        const deps = await fetchComponentDependencies(component.name);
+        return {
+          ...component,
+          upstream: deps ? deps.upstream : [],
+          downstream: deps ? deps.downstream : []
+        };
+      }));
+      
+      setComponents(componentsWithDeps);
+    } catch (err) {
+      console.error('Error fetching components with dependencies:', err);
+      setError(`获取组件列表失败: ${err.message}`);
+    }
+  };
+
   // 创建新组件
   const createComponent = async (componentData) => {
     try {
@@ -167,7 +205,7 @@ const AddComponentDependency = () => {
       try {
         await deleteComponent(id);
         setSuccess('组件删除成功！');
-        await fetchComponents(); // 刷新组件列表
+        await fetchComponentsWithDependencies(); // 刷新组件列表
       } catch (err) {
         setError(`删除失败: ${err.message}`);
       }
@@ -215,7 +253,7 @@ const AddComponentDependency = () => {
       }
       
       // 刷新组件列表
-      await fetchComponents();
+      await fetchComponentsWithDependencies();
       
       // 重置表单（保留关系类型）
       setFormData(prev => ({
@@ -236,7 +274,7 @@ const AddComponentDependency = () => {
 
   // 组件挂载时获取组件列表
   useEffect(() => {
-    fetchComponents();
+    fetchComponentsWithDependencies();
   }, []);
 
   return (
@@ -408,6 +446,8 @@ const AddComponentDependency = () => {
                 <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>名称</th>
                 <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>类型</th>
                 <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>描述</th>
+                <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>上游组件</th>
+                <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>下游组件</th>
                 <th style={{ border: '1px solid #dee2e6', padding: '8px', width: '120px' }}>操作</th>
               </tr>
             </thead>
@@ -418,6 +458,34 @@ const AddComponentDependency = () => {
                   <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>{component.name}</td>
                   <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>{component.type}</td>
                   <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>{component.description || '-'}</td>
+                  <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>
+                    {component.upstream && component.upstream.length > 0 ? (
+                      <div>
+                        {component.upstream.map((up, index) => (
+                          <div key={index} style={{ marginBottom: '2px' }}>
+                            <span style={{ color: '#28a745' }}>{up.name}</span>
+                            <span style={{ fontSize: '12px', color: '#6c757d', marginLeft: '5px' }}>({up.relationType})</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span style={{ color: '#6c757d' }}>-</span>
+                    )}
+                  </td>
+                  <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>
+                    {component.downstream && component.downstream.length > 0 ? (
+                      <div>
+                        {component.downstream.map((down, index) => (
+                          <div key={index} style={{ marginBottom: '2px' }}>
+                            <span style={{ color: '#007bff' }}>{down.name}</span>
+                            <span style={{ fontSize: '12px', color: '#6c757d', marginLeft: '5px' }}>({down.relationType})</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span style={{ color: '#6c757d' }}>-</span>
+                    )}
+                  </td>
                   <td style={{ border: '1px solid #dee2e6', padding: '8px', textAlign: 'center' }}>
                     <button 
                       onClick={() => handleEditComponent(component)}
