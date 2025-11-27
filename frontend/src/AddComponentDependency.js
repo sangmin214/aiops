@@ -21,20 +21,6 @@ const AddComponentDependency = () => {
   const [editingComponent, setEditingComponent] = useState(null);
 
   // 获取所有组件
-  const fetchComponents = async () => {
-    try {
-      const response = await fetch('http://localhost:3001/api/component/components');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setComponents(data);
-    } catch (err) {
-      console.error('Error fetching components:', err);
-      setError(`获取组件列表失败: ${err.message}`);
-    }
-  };
-
   // 获取组件的依赖关系
   const fetchComponentDependencies = async (componentName) => {
     try {
@@ -275,7 +261,7 @@ const AddComponentDependency = () => {
   // 组件挂载时获取组件列表
   useEffect(() => {
     fetchComponentsWithDependencies();
-  }, []);
+  }, [fetchComponentsWithDependencies]);
 
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
