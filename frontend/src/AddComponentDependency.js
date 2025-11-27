@@ -153,48 +153,6 @@ const AddComponentDependency = () => {
     }
   };
 
-  // 删除组件关系
-  const deleteComponentRelation = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:3001/api/component/component-relations/${id}`, {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      return true;
-    } catch (err) {
-      console.error('Error deleting component relation:', err);
-      throw err;
-    }
-  };
-
-  // 更新组件关系
-  const updateComponentRelation = async (id, relationData) => {
-    try {
-      const response = await fetch(`http://localhost:3001/api/component/component-relations/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(relationData),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      const updatedRelation = await response.json();
-      return updatedRelation;
-    } catch (err) {
-      console.error('Error updating component relation:', err);
-      throw err;
-    }
-  };
 
 
   // 处理表单输入变化
