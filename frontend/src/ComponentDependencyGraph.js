@@ -395,11 +395,28 @@ const ComponentDependencyGraph = () => {
             const textWidth = ctx.measureText(label).width;
             const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
 
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            // 根据节点类型设置不同的背景和边框
+            if (node.color === '#ff0000') { // 中心节点
+              ctx.fillStyle = 'rgba(255, 0, 0, 0.9)'; // 红色背景
+              ctx.strokeStyle = '#ffffff'; // 白色边框
+              ctx.lineWidth = 2;
+            } else {
+              ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; // 白色背景
+              ctx.strokeStyle = node.color; // 彩色边框
+              ctx.lineWidth = 1;
+            }
+            
             ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
+            ctx.strokeRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
+            
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillStyle = node.color;
+            // 根据节点类型设置不同的文本颜色，使中心节点更突出
+            if (node.color === '#ff0000') { // 中心节点使用白色文本以增强对比度
+              ctx.fillStyle = '#ffffff';
+            } else {
+              ctx.fillStyle = node.color;
+            }
             ctx.fillText(label, node.x, node.y);
 
             node.__bckgDimensions = bckgDimensions; // to re-use in nodePointerAreaPaint
@@ -417,15 +434,15 @@ const ComponentDependencyGraph = () => {
         <h3 style={{ color: '#1e293b', marginBottom: '10px' }}>图例说明</h3>
         <div style={{ display: 'flex', gap: '25px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '16px', height: '16px', backgroundColor: '#ff0000', borderRadius: '50%' }}></div>
+            <div style={{ width: '16px', height: '16px', backgroundColor: '#ff0000', border: '2px solid #ffffff', borderRadius: '50%' }}></div>
             <span style={{ color: '#334155' }}>中心组件</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '16px', height: '16px', backgroundColor: '#00ff00', borderRadius: '50%' }}></div>
+            <div style={{ width: '16px', height: '16px', backgroundColor: '#ffffff', border: '1px solid #00ff00', borderRadius: '50%' }}></div>
             <span style={{ color: '#334155' }}>上游组件</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '16px', height: '16px', backgroundColor: '#0000ff', borderRadius: '50%' }}></div>
+            <div style={{ width: '16px', height: '16px', backgroundColor: '#ffffff', border: '1px solid #0000ff', borderRadius: '50%' }}></div>
             <span style={{ color: '#334155' }}>下游组件</span>
           </div>
         </div>
