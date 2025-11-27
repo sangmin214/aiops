@@ -96,10 +96,10 @@ const SimpleDependencyGraph = () => {
           <div style={{ padding: '20px' }}>加载中...</div>
         ) : graphData.component ? (
           <div style={{ width: '100%', maxWidth: '800px' }}>
-            {/* 上游组件 */}
-            <div style={{ marginBottom: '30px' }}>
-              <h3 style={{ textAlign: 'center', color: '#334155', marginBottom: '15px' }}>上游组件</h3>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
+            {/* 垂直布局的依赖关系图 */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+              {/* 上游组件 */}
+              <div style={{ marginBottom: '20px', width: '100%', display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '20px' }}>
                 {graphData.upstream.map((upstream, index) => (
                   <div 
                     key={upstream.id} 
@@ -124,92 +124,77 @@ const SimpleDependencyGraph = () => {
                   <div style={{ color: '#94a3b8', fontStyle: 'italic' }}>无上游组件</div>
                 )}
               </div>
-            </div>
-            
-            {/* 箭头指向中心组件 */}
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              margin: '10px 0',
-              position: 'relative'
-            }}>
-              <div style={{ 
-                height: '2px', 
-                backgroundColor: '#94a3b8', 
-                width: '80%',
-                position: 'relative'
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  right: '0',
-                  top: '-4px',
-                  width: '0',
-                  height: '0',
-                  borderLeft: '8px solid #94a3b8',
-                  borderTop: '4px solid transparent',
-                  borderBottom: '4px solid transparent'
-                }}></div>
+              
+              {/* 向下的箭头 */}
+              <div style={{ margin: '10px 0' }}>
+                <div style={{ 
+                  width: '2px', 
+                  height: '30px', 
+                  backgroundColor: '#94a3b8', 
+                  position: 'relative',
+                  margin: '0 auto'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '0',
+                    left: '-4px',
+                    width: '0',
+                    height: '0',
+                    borderLeft: '4px solid transparent',
+                    borderRight: '4px solid transparent',
+                    borderTop: '8px solid #94a3b8'
+                  }}></div>
+                </div>
               </div>
-            </div>
-            
-            {/* 中心组件 */}
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              margin: '20px 0'
-            }}>
-              <div 
-                style={{
-                  padding: '20px',
-                  backgroundColor: '#ff0000',
-                  color: 'white',
-                  border: '2px solid #ffffff',
-                  borderRadius: '8px',
-                  minWidth: '200px',
-                  textAlign: 'center',
-                  boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-                }}
-              >
-                <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{graphData.component.name}</div>
-                <div style={{ fontSize: '16px', marginTop: '5px' }}>{graphData.component.type}</div>
-                {graphData.component.description && (
-                  <div style={{ fontSize: '14px', marginTop: '10px', fontStyle: 'italic' }}>
-                    {graphData.component.description}
-                  </div>
-                )}
+              
+              {/* 中心组件 */}
+              <div style={{ margin: '10px 0' }}>
+                <div 
+                  style={{
+                    padding: '20px',
+                    backgroundColor: '#ff0000',
+                    color: 'white',
+                    border: '2px solid #ffffff',
+                    borderRadius: '8px',
+                    minWidth: '200px',
+                    textAlign: 'center',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+                  }}
+                >
+                  <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{graphData.component.name}</div>
+                  <div style={{ fontSize: '16px', marginTop: '5px' }}>{graphData.component.type}</div>
+                  {graphData.component.description && (
+                    <div style={{ fontSize: '14px', marginTop: '10px', fontStyle: 'italic' }}>
+                      {graphData.component.description}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            
-            {/* 箭头指向下游组件 */}
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              margin: '10px 0',
-              position: 'relative'
-            }}>
-              <div style={{ 
-                height: '2px', 
-                backgroundColor: '#94a3b8', 
-                width: '80%',
-                position: 'relative'
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  right: '0',
-                  top: '-4px',
-                  width: '0',
-                  height: '0',
-                  borderLeft: '8px solid #94a3b8',
-                  borderTop: '4px solid transparent',
-                  borderBottom: '4px solid transparent'
-                }}></div>
+              
+              {/* 向下的箭头 */}
+              <div style={{ margin: '10px 0' }}>
+                <div style={{ 
+                  width: '2px', 
+                  height: '30px', 
+                  backgroundColor: '#94a3b8', 
+                  position: 'relative',
+                  margin: '0 auto'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '0',
+                    left: '-4px',
+                    width: '0',
+                    height: '0',
+                    borderLeft: '4px solid transparent',
+                    borderRight: '4px solid transparent',
+                    borderTop: '8px solid #94a3b8'
+                  }}></div>
+                </div>
               </div>
-            </div>
-            
-            {/* 下游组件 */}
-            <div style={{ marginTop: '30px' }}>
-              <h3 style={{ textAlign: 'center', color: '#334155', marginBottom: '15px' }}>下游组件</h3>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
+              
+              {/* 下游组件 */}
+              <div style={{ marginTop: '20px', width: '100%', display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '20px' }}>
                 {graphData.downstream.map((downstream, index) => (
                   <div 
                     key={downstream.id} 
@@ -284,20 +269,20 @@ const SimpleDependencyGraph = () => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ 
-              width: '30px', 
-              height: '2px', 
+              width: '2px', 
+              height: '30px', 
               backgroundColor: '#94a3b8',
               position: 'relative'
             }}>
               <div style={{
                 position: 'absolute',
-                right: '0',
-                top: '-4px',
+                bottom: '0',
+                left: '-4px',
                 width: '0',
                 height: '0',
-                borderLeft: '6px solid #94a3b8',
-                borderTop: '3px solid transparent',
-                borderBottom: '3px solid transparent'
+                borderLeft: '4px solid transparent',
+                borderRight: '4px solid transparent',
+                borderTop: '8px solid #94a3b8'
               }}></div>
             </div>
             <span style={{ color: '#334155' }}>依赖关系</span>
