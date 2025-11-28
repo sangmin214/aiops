@@ -1,6 +1,6 @@
 import React from 'react';
 
-const SolutionDisplay = ({ solution, loading }) => {
+const SolutionDisplay = ({ solution, loading, usedKnowledgeBase, knowledgeBaseLinks }) => {
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-4">解决方案</h2>
@@ -11,9 +11,38 @@ const SolutionDisplay = ({ solution, loading }) => {
         </div>
       ) : solution ? (
         <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          {/* 显示是否使用了本地知识库 */}
+          {usedKnowledgeBase !== undefined && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <div className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                <span className="font-medium text-blue-800">
+                  {usedKnowledgeBase ? '此解决方案基于本地知识库生成' : '此解决方案未使用本地知识库'}
+                </span>
+              </div>
+              
+              {/* 显示知识库链接 */}
+              {knowledgeBaseLinks && knowledgeBaseLinks.length > 0 && (
+                <div className="mt-2 text-sm text-blue-700">
+                  <p className="mb-1">参考的知识库条目：</p>
+                  <ul className="list-disc list-inside">
+                    {knowledgeBaseLinks.map((link, index) => (
+                      <li key={index} className="ml-2">
+                        <span className="font-medium">"{link.problem}"</span> (相似度: {(link.score * 100).toFixed(2)}%)
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+          
           <div className="whitespace-pre-wrap text-gray-700">
             {solution}
           </div>
+          
           {/* 添加复制按钮 */}
           <div className="mt-4 flex justify-end">
             <button

@@ -12,11 +12,17 @@ function App() {
   const [error, setError] = useState('');
   const [knowledgeEntries, setKnowledgeEntries] = useState([]);
   const [activeTab, setActiveTab] = useState('home'); // 默认激活首页
+  
+  // 新增状态用于存储是否使用了知识库以及知识库链接
+  const [usedKnowledgeBase, setUsedKnowledgeBase] = useState(undefined);
+  const [knowledgeBaseLinks, setKnowledgeBaseLinks] = useState([]);
 
   const handleProblemSubmit = async (problem) => {
     setLoading(true);
     setSolution('');
     setError('');
+    setUsedKnowledgeBase(undefined);
+    setKnowledgeBaseLinks([]);
     
     try {
       console.log('Submitting problem:', problem);
@@ -33,6 +39,9 @@ function App() {
       
       if (response.ok) {
         setSolution(data.solution);
+        // 设置是否使用了知识库以及知识库链接
+        setUsedKnowledgeBase(data.usedKnowledgeBase);
+        setKnowledgeBaseLinks(data.knowledgeBaseLinks || []);
       } else {
         setError(`错误: ${data.error}`);
       }
@@ -149,7 +158,12 @@ function App() {
             )}
             
             <div className="bg-white shadow-xl rounded-lg p-6">
-              <SolutionDisplay solution={solution} loading={loading} />
+              <SolutionDisplay 
+                solution={solution} 
+                loading={loading} 
+                usedKnowledgeBase={usedKnowledgeBase}
+                knowledgeBaseLinks={knowledgeBaseLinks}
+              />
             </div>
           </div>
         );
