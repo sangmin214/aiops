@@ -6,7 +6,7 @@
 
 - Node.js >= 14.x
 - npm >= 6.x
-- Docker (用于运行MongoDB和Qdrant)
+- Docker (用于运行MongoDB、Qdrant和PostgreSQL)
 - DeepSeek API密钥
 
 ## 部署架构
@@ -15,20 +15,20 @@
 ┌─────────────────┐    HTTP    ┌──────────────────┐
 │   用户浏览器     │ ──────────▶ │   前端静态服务器  │
 └─────────────────┘            └──────────────────┘
-                                        │
-                                HTTP API│
-                                        ▼
-                              ┌──────────────────┐
-                              │   后端API服务     │
-                              └──────────────────┘
-                      ┌───────────────┼───────────────┐
-                      │               │               │
-              MongoDB API      Qdrant API     DeepSeek API
-                      │               │               │
-                      ▼               ▼               ▼
-              ┌──────────┐   ┌─────────────┐   ┌─────────────┐
-              │ MongoDB  │   │   Qdrant    │   │  DeepSeek   │
-              └──────────┘   └─────────────┘   └─────────────┘
+                                       │
+                               HTTP API│
+                                       ▼
+                             ┌──────────────────┐
+                             │   后端API服务     │
+                             └──────────────────┘
+                     ┌─────────────┼─────────────┼──────────────┐
+                     │             │             │              │
+             MongoDB API     Qdrant API    PostgreSQL API   DeepSeek API
+                     │             │             │              │
+                     ▼             ▼             ▼              ▼
+              ┌──────────┐  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+              │ MongoDB  │  │   Qdrant    │ │  PostgreSQL │ │  DeepSeek   │
+              └──────────┘  └─────────────┘ └─────────────┘ └─────────────┘
 ```
 
 ## 基础设施部署
@@ -47,7 +47,12 @@
    ./start-qdrant.sh
    ```
 
-3. 如需停止所有容器：
+3. 启动PostgreSQL数据库：
+   ```bash
+   ./start-postgresql.sh
+   ```
+
+4. 如需停止所有容器：
    ```bash
    ./stop-containers.sh
    ```
@@ -135,6 +140,11 @@
 - `MONGODB_URI`: MongoDB连接字符串，默认为`mongodb://admin:password@localhost:27017/aiops?authSource=admin`
 - `QDRANT_HOST`: Qdrant主机地址，默认为`localhost`
 - `QDRANT_PORT`: Qdrant端口，默认为`6333`
+- `DB_HOST`: PostgreSQL数据库主机地址，默认为`localhost`
+- `DB_PORT`: PostgreSQL数据库端口，默认为`5442`
+- `DB_NAME`: PostgreSQL数据库名称，默认为`aiops_db`
+- `DB_USER`: PostgreSQL数据库用户名，默认为`aiops_user`
+- `DB_PASSWORD`: PostgreSQL数据库密码，默认为`aiops_password`
 
 ### 前端配置
 
@@ -146,7 +156,7 @@
 
 1. 检查DeepSeek API密钥是否正确配置
 2. 确认后端服务是否正常运行
-3. 检查MongoDB和Qdrant容器是否正常启动
+3. 检查MongoDB、Qdrant和PostgreSQL容器是否正常启动
 4. 检查防火墙设置是否允许相应端口通信
 
 ### 前端问题
@@ -186,7 +196,11 @@ docker logs aiops_mongodb
 # 查看Qdrant日志
 docker logs aiops_qdrant
 
+# 查看PostgreSQL日志
+docker logs aiops_postgres
+
 # 实时跟踪日志
 docker logs -f aiops_mongodb
 docker logs -f aiops_qdrant
+docker logs -f aiops_postgres
 ```
