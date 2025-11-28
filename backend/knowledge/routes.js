@@ -74,6 +74,40 @@ router.get('/knowledge', async (req, res) => {
 });
 
 /**
+ * 根据关键词搜索知识库条目
+ * @route GET /api/knowledge/search
+ */
+router.get('/knowledge/search', async (req, res) => {
+  try {
+    console.log('Search API called with query:', req.query);
+    const { q } = req.query;
+    
+    if (!q) {
+      console.log('Search query is missing');
+      return res.status(400).json({ error: 'Query parameter "q" is required' });
+    }
+    
+    console.log('Searching for:', q);
+    
+    // 使用正则表达式进行模糊搜索
+    const searchRegex = new RegExp(q, 'i'); // 'i' 表示不区分大小写
+    const entries = await KnowledgeEntry.find({
+      $or: [
+        { problem: searchRegex },
+        { rootCause: searchRegex },
+        { solution: searchRegex }
+      ]
+    }).sort({ createdAt: -1 });
+    
+    console.log('Search results count:', entries.length);
+    res.json(entries);
+  } catch (error) {
+    console.error('Error searching knowledge entries:', error);
+    res.status(500).json({ error: 'Failed to search knowledge entries' });
+  }
+});
+
+/**
  * 根据ID获取知识库条目
  * @route GET /api/knowledge/:id
  */

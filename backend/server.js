@@ -41,6 +41,9 @@ let commandResults = [];
 module.exports.getRegisteredAgents = () => registeredAgents;
 module.exports.registeredAgents = registeredAgents;
 
+// 添加中间件来解析JSON请求体（必须在路由之前）
+app.use(express.json());
+
 // CORS配置 - 手动设置CORS头部（放在所有路由之前）
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', 'http://localhost:3002');
@@ -197,14 +200,6 @@ app.delete('/api/agent/results', (req, res) => {
   }
 });
 
-app.use(express.json());
-
-// 初始化DeepSeek客户端
-const deepseek = new OpenAI({
-  apiKey: process.env.DEEPSEEK_API_KEY,
-  baseURL: process.env.DEEPSEEK_BASE_URL,
-});
-
 // 导入知识库路由
 const knowledgeRoutes = require('./knowledge/routes');
 app.use('/api', knowledgeRoutes);
@@ -220,6 +215,12 @@ app.use('/api', agentRoutes);
 // 导入向量搜索功能
 const { searchSimilarEntries } = require('./knowledge/qdrant');
 const { generateEmbedding } = require('./knowledge/embedding');
+
+// 初始化DeepSeek客户端
+const deepseek = new OpenAI({
+  apiKey: process.env.DEEPSEEK_API_KEY,
+  baseURL: process.env.DEEPSEEK_BASE_URL,
+});
 
 // 根路径
 app.get('/', (req, res) => {
