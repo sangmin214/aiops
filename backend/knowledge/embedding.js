@@ -13,26 +13,29 @@ const deepseek = new OpenAI({
  */
 async function generateEmbedding(text) {
   try {
-    // 使用简单的哈希方法生成向量表示
-    // 确保生成的向量长度为1536
-    const vector = [];
-    const len = Math.min(text.length, 1536);
+    console.log('Generating embedding for text:', text.substring(0, 50) + '...');
     
-    for (let i = 0; i < 1536; i++) {
-      if (i < len) {
-        // 使用字符的ASCII值作为向量元素
-        vector.push(text.charCodeAt(i) / 255.0);
-      } else {
-        // 对于较短的文本，用0填充
-        vector.push(0);
+    // 使用更复杂的哈希方法生成向量表示
+    // 确保生成的向量长度为1536
+    const vector = new Array(1536).fill(0);
+    
+    // 将文本转换为更均匀分布的向量
+    for (let i = 0; i < text.length; i++) {
+      const charCode = text.charCodeAt(i);
+      const index = charCode % 1536;
+      // 使用字符频率和位置信息来增加向量的区分度
+      vector[index] += (charCode * (i + 1)) / 10000;
+    }
+    
+    // 归一化向量以提高相似度计算的准确性
+    const magnitude = Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0));
+    if (magnitude > 0) {
+      for (let i = 0; i < vector.length; i++) {
+        vector[i] = vector[i] / magnitude;
       }
     }
     
-    // 确保向量长度正确
-    if (vector.length !== 1536) {
-      throw new Error(`Generated vector has incorrect length: ${vector.length}`);
-    }
-    
+    console.log('Generated vector with length:', vector.length);
     return vector;
   } catch (error) {
     console.error('Error generating embedding:', error);

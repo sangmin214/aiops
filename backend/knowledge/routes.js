@@ -23,6 +23,8 @@ router.post('/knowledge', async (req, res) => {
       });
     }
     
+    console.log('Creating new knowledge entry:', { problem, rootCause, solution });
+    
     // 创建知识库条目
     const knowledgeEntry = new KnowledgeEntry({
       problem,
@@ -36,6 +38,7 @@ router.post('/knowledge', async (req, res) => {
     
     // 保存到MongoDB
     const savedEntry = await knowledgeEntry.save();
+    console.log('Knowledge entry saved to MongoDB:', savedEntry._id);
     
     // 添加到向量数据库
     await addKnowledgeEntry(savedEntry._id.toString(), embedding, {
@@ -44,6 +47,7 @@ router.post('/knowledge', async (req, res) => {
       solution: savedEntry.solution,
       createdAt: savedEntry.createdAt
     });
+    console.log('Knowledge entry added to Qdrant vector database');
     
     res.status(201).json({
       message: 'Knowledge entry created successfully',
@@ -100,6 +104,64 @@ router.delete('/knowledge/:id', async (req, res) => {
   } catch (error) {
     console.error('Error deleting knowledge entry:', error);
     res.status(500).json({ error: 'Failed to delete knowledge entry' });
+  }
+});
+
+/**
+ * 更新知识库条目
+ * @route PUT /api/knowledge/:id
+ * @param {string} problem - 问题描述
+ * @param {string} rootCause - 根本原因分析
+ * @param {string} solution - 解决方案
+ */
+router.put('/knowledge/:id', async (req, res) => {
+  try {
+    const { problem, rootCause, solution } = req.body;
+    
+    // 验证必需字段
+    if (!problem || !rootCause || !solution) {
+      return res.status(400).json({
+        error: 'Missing required fields: problem, rootCause, solution'
+      });
+    }
+    
+    console.log('Updating knowledge entry:', req.params.id, { problem, rootCause, solution });
+    
+    // 查找并更新知识库条目
+    const knowledgeEntry = await KnowledgeEntry.findById(req.params.id);
+    if (!knowledgeEntry) {
+      return res.status(404).json({ error: 'Knowledge entry not found' });
+    }
+    
+    // 更新字段
+    knowledgeEntry.problem = problem;
+    knowledgeEntry.rootCause = rootCause;
+    knowledgeEntry.solution = solution;
+    
+    // 重新生成向量嵌入
+    const embedding = await generateKnowledgeEmbedding(knowledgeEntry);
+    knowledgeEntry.embedding = embedding;
+    
+    // 保存到MongoDB
+    const updatedEntry = await knowledgeEntry.save();
+    console.log('Knowledge entry updated in MongoDB:', updatedEntry._id);
+    
+    // 更新向量数据库中的条目
+    await addKnowledgeEntry(updatedEntry._id.toString(), embedding, {
+      problem: updatedEntry.problem,
+      rootCause: updatedEntry.rootCause,
+      solution: updatedEntry.solution,
+      createdAt: updatedEntry.createdAt
+    });
+    console.log('Knowledge entry updated in Qdrant vector database');
+    
+    res.json({
+      message: 'Knowledge entry updated successfully',
+      entry: updatedEntry
+    });
+  } catch (error) {
+    console.error('Error updating knowledge entry:', error);
+    res.status(500).json({ error: 'Failed to update knowledge entry' });
   }
 });
 

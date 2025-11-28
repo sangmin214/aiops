@@ -4,6 +4,7 @@ import SolutionDisplay from './components/SolutionDisplay';
 import KnowledgeBase from './components/KnowledgeBase';
 import DependencyGraphTabs from './DependencyGraphTabs';
 import AddComponentDependency from './AddComponentDependency';
+import AgentManagement from './components/AgentManagement';
 
 function App() {
   const [solution, setSolution] = useState('');
@@ -17,6 +18,7 @@ function App() {
     setError('');
     
     try {
+      console.log('Submitting problem:', problem);
       const response = await fetch('http://localhost:3001/api/solve', {
         method: 'POST',
         headers: {
@@ -26,6 +28,7 @@ function App() {
       });
 
       const data = await response.json();
+      console.log('Response received:', data);
       
       if (response.ok) {
         setSolution(data.solution);
@@ -33,6 +36,7 @@ function App() {
         setError(`错误: ${data.error}`);
       }
     } catch (error) {
+      console.error('Network error:', error);
       setError(`网络错误: ${error.message}`);
     } finally {
       setLoading(false);
@@ -69,6 +73,31 @@ function App() {
         // 成功添加后刷新知识库列表
         fetchKnowledgeEntries();
         return { success: true, message: '知识库条目添加成功' };
+      } else {
+        return { success: false, message: data.error };
+      }
+    } catch (error) {
+      return { success: false, message: `网络错误: ${error.message}` };
+    }
+  };
+
+  // 更新知识库条目
+  const updateKnowledgeEntry = async (id, entry) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/knowledge/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(entry),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        // 成功更新后刷新知识库列表
+        fetchKnowledgeEntries();
+        return { success: true, message: '知识库条目更新成功' };
       } else {
         return { success: false, message: data.error };
       }
@@ -134,6 +163,7 @@ function App() {
                 <KnowledgeBase 
                   entries={knowledgeEntries} 
                   onAdd={addKnowledgeEntry}
+                  onUpdate={updateKnowledgeEntry}
                   onDelete={deleteKnowledgeEntry}
                   loading={loading}
                 />
@@ -151,6 +181,12 @@ function App() {
           <div className="mt-8 bg-white shadow-xl rounded-lg p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">组件依赖关系图</h2>
             <DependencyGraphTabs />
+          </div>
+          
+          {/* Agent管理 */}
+          <div className="mt-8 bg-white shadow-xl rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">分布式Agent管理</h2>
+            <AgentManagement />
           </div>
           
           <div className="mt-8 text-center text-sm text-gray-500">

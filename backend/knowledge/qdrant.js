@@ -32,15 +32,15 @@ async function initCollection() {
       console.log(`Collection '${COLLECTION_NAME}' created successfully`);
     } else {
       console.log(`Collection '${COLLECTION_NAME}' already exists`);
-      // 删除现有的集合并重新创建以确保配置正确
-      await client.deleteCollection(COLLECTION_NAME);
-      await client.createCollection(COLLECTION_NAME, {
-        vectors: {
-          size: 1536,
-          distance: 'Cosine',
-        },
-      });
-      console.log(`Collection '${COLLECTION_NAME}' recreated successfully`);
+      // 不再删除现有的集合，保留已有数据
+      // await client.deleteCollection(COLLECTION_NAME);
+      // await client.createCollection(COLLECTION_NAME, {
+      //   vectors: {
+      //     size: 1536,
+      //     distance: 'Cosine',
+      //   },
+      // });
+      // console.log(`Collection '${COLLECTION_NAME}' recreated successfully`);
     }
   } catch (error) {
     console.error('Error initializing collection:', error);
@@ -143,11 +143,31 @@ async function addKnowledgeEntry(id, vector, payload) {
  */
 async function searchSimilarEntries(queryVector, limit = 5) {
   try {
-    const result = await client.search(COLLECTION_NAME, {
+    console.log('Searching for similar entries with vector length:', queryVector.length);
+    
+    // 验证向量维度
+    if (queryVector.length !== 1536) {
+      console.warn(`Warning: Query vector dimension mismatch. Expected 1536, got ${queryVector.length}`);
+      // 如果维度不匹配，截断或填充到正确大小
+      if (queryVector.length > 1536) {
+        queryVector = queryVector.slice(0, 1536);
+      } else {
+        queryVector = [...queryVector, ...Array(1536 - queryVector.length).fill(0)];
+      }
+    }
+    
+    const searchParams = {
       vector: queryVector,
       limit: limit,
       with_payload: true,
-    });
+    };
+    
+    console.log('Search params:', JSON.stringify(searchParams, null, 2));
+    
+    const result = await client.search(COLLECTION_NAME, searchParams);
+    
+    console.log('Search result count:', result.length);
+    console.log('Search results:', JSON.stringify(result, null, 2));
     
     return result;
   } catch (error) {

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 
-const KnowledgeBase = ({ entries, onAdd, onDelete, loading }) => {
+const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading }) => {
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [newEntry, setNewEntry] = useState({
     problem: '',
     rootCause: '',
@@ -18,12 +19,25 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, loading }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await onAdd(newEntry);
-    if (result.success) {
-      setNewEntry({ problem: '', rootCause: '', solution: '' });
-      setShowForm(false);
+    if (editingId) {
+      // 更新现有条目
+      const result = await onUpdate(editingId, newEntry);
+      if (result.success) {
+        setNewEntry({ problem: '', rootCause: '', solution: '' });
+        setShowForm(false);
+        setEditingId(null);
+      } else {
+        alert(result.message);
+      }
     } else {
-      alert(result.message);
+      // 添加新条目
+      const result = await onAdd(newEntry);
+      if (result.success) {
+        setNewEntry({ problem: '', rootCause: '', solution: '' });
+        setShowForm(false);
+      } else {
+        alert(result.message);
+      }
     }
   };
 
@@ -31,6 +45,22 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, loading }) => {
     if (window.confirm('确定要删除这个知识库条目吗？')) {
       await onDelete(id);
     }
+  };
+
+  const handleEdit = (entry) => {
+    setNewEntry({
+      problem: entry.problem,
+      rootCause: entry.rootCause,
+      solution: entry.solution
+    });
+    setEditingId(entry._id);
+    setShowForm(true);
+  };
+
+  const handleCancel = () => {
+    setNewEntry({ problem: '', rootCause: '', solution: '' });
+    setShowForm(false);
+    setEditingId(null);
   };
 
   return (
@@ -83,13 +113,22 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, loading }) => {
             />
           </div>
           
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
-          >
-            {loading ? '添加中...' : '添加条目'}
-          </button>
+          <div className="flex space-x-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
+            >
+              {loading ? (editingId ? '更新中...' : '添加中...') : (editingId ? '更新条目' : '添加条目')}
+            </button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+            >
+              取消
+            </button>
+          </div>
         </form>
       )}
 
@@ -103,13 +142,22 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, loading }) => {
                   <p className="text-sm text-gray-600 mt-1"><span className="font-medium">根本原因:</span> {entry.rootCause}</p>
                   <p className="text-sm text-gray-800 mt-2"><span className="font-medium">解决方案:</span> {entry.solution}</p>
                 </div>
-                <button
-                  onClick={() => handleDelete(entry._id)}
-                  className="ml-4 text-red-500 hover:text-red-700"
-                  title="删除条目"
-                >
-                  删除
-                </button>
+                <div className="ml-4 flex space-x-2">
+                  <button
+                    onClick={() => handleEdit(entry)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="编辑条目"
+                  >
+                    编辑
+                  </button>
+                  <button
+                    onClick={() => handleDelete(entry._id)}
+                    className="text-red-500 hover:text-red-700"
+                    title="删除条目"
+                  >
+                    删除
+                  </button>
+                </div>
               </div>
             </div>
           ))

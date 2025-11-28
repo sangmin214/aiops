@@ -1,0 +1,30 @@
+{
+  "name": "aiops-agent",
+  "version": "1.0.0",
+  "description": "Distributed agent for AI-Ops tool",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js",
+    "start:enhanced": "node agent-enhanced.js",
+    "start:dist": "node dist-agent.js",
+    "test:dist": "node test-dist-agent.js",
+    "monitor:dist": "node monitor-dist-agent.js",
+    "dev": "nodemon agent.js"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "express": "^4.18.2",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "aiops",
+    "agent",
+    "distributed",
+    "linux"
+  ],
+  "author": "AI-Ops Team",
+  "license": "MIT"
+}

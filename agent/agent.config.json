@@ -1,0 +1,7 @@
+{
+  "agentId": "agent-23antw923",
+  "serverUrl": "http://localhost:3001/api/agent",
+  "port": 3003,
+  "heartbeatInterval": 30000,
+  "websocketUrl": "ws://localhost:3001/"
+}
