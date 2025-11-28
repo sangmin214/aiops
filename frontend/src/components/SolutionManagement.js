@@ -364,7 +364,7 @@ const SolutionManagement = () => {
       </div>
 
       {/* 解决方案模态框 */}
-      {showModal && selectedSolution && (
+      {showModal && (
         <SolutionModal
           solution={selectedSolution}
           mode={modalMode}
