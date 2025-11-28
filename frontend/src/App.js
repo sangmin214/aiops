@@ -78,6 +78,26 @@ function App() {
     setSolutionToAdd(solutionData);
   };
 
+  // 处理从知识库转换为解决方案
+  const handleConvertToSolution = (entry) => {
+    // 切换到解决方案标签页
+    setActiveTab('solution');
+    
+    // 准备要添加的解决方案数据
+    const solutionData = {
+      title: '知识库解决方案 - ' + new Date().toLocaleString('zh-CN'),
+      content: entry.solution,
+      problem: entry.problem,
+      tags: ['知识库', '手动转换'],
+      isExecutable: false,
+      executableScript: '',
+      source: 'KnowledgeBase'
+    };
+    
+    // 设置要添加的解决方案数据
+    setSolutionToAdd(solutionData);
+  };
+
   // 获取知识库条目
   const fetchKnowledgeEntries = async () => {
     try {
@@ -202,6 +222,7 @@ function App() {
               onAdd={addKnowledgeEntry}
               onUpdate={updateKnowledgeEntry}
               onDelete={deleteKnowledgeEntry}
+              onConvertToSolution={handleConvertToSolution}
               loading={loading}
             />
           </div>

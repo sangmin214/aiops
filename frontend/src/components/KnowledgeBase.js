@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading }) => {
+const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertToSolution }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [newEntry, setNewEntry] = useState({
@@ -58,6 +58,13 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading }) => {
     });
     setEditingId(entry._id);
     setShowForm(true);
+  };
+
+  // 处理转换为解决方案
+  const handleConvertToSolution = (entry) => {
+    if (onConvertToSolution) {
+      onConvertToSolution(entry);
+    }
   };
 
   const handleCancel = () => {
@@ -221,6 +228,13 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading }) => {
                     title="编辑条目"
                   >
                     编辑
+                  </button>
+                  <button
+                    onClick={() => handleConvertToSolution(entry)}
+                    className="text-green-500 hover:text-green-700"
+                    title="转换为解决方案"
+                  >
+                    转换为解决方案
                   </button>
                   <button
                     onClick={() => handleDelete(entry._id)}
