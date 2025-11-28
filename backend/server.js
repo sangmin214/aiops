@@ -189,6 +189,10 @@ app.use('/api/component', componentRoutes);
 const agentRoutes = require('./agent/routes');
 app.use('/api', agentRoutes);
 
+// 导入历史事件管理路由
+const historicalEventsRoutes = require('./historical-events/routes');
+app.use('/api', historicalEventsRoutes);
+
 // 导入向量搜索功能
 const { searchSimilarEntries } = require('./knowledge/qdrant');
 const { generateEmbedding } = require('./knowledge/embedding');

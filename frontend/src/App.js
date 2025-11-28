@@ -5,6 +5,7 @@ import KnowledgeBase from './components/KnowledgeBase';
 import DependencyGraphTabs from './DependencyGraphTabs';
 import AddComponentDependency from './AddComponentDependency';
 import AgentManagement from './components/AgentManagement';
+import HistoricalEvents from './components/HistoricalEvents';
 
 function App() {
   const [solution, setSolution] = useState('');
@@ -201,6 +202,10 @@ function App() {
             <AgentManagement />
           </div>
         );
+      case 'historical':
+        return (
+          <HistoricalEvents />
+        );
       default:
         return (
           <div className="bg-white shadow-xl rounded-lg p-6">
@@ -270,6 +275,18 @@ function App() {
                     }`}
                   >
                     <span className="ml-3">Agent管理</span>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setActiveTab('historical')}
+                    className={`w-full text-left px-6 py-3 flex items-center transition-colors ${
+                      activeTab === 'historical' 
+                        ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600' 
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="ml-3">历史事件</span>
                   </button>
                 </li>
               </ul>
