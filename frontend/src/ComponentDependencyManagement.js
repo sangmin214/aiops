@@ -11,7 +11,7 @@ const ComponentDependencyManagement = () => {
   };
 
   return (
-    <div>
+    <div className="-ml-4">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">组件依赖管理</h1>
         <p className="text-gray-600">管理应用中的组件及其依赖关系</p>

@@ -322,7 +322,7 @@ const AddComponentDependency = () => {
   }, [fetchComponentsWithDependencies]);
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+    <div style={{ padding: '0', maxWidth: '100%' }}>
       <h2>添加组件依赖信息</h2>
       
       {/* 错误信息 */}
@@ -358,7 +358,7 @@ const AddComponentDependency = () => {
                   <div style={{ flex: 1, marginRight: '10px' }}>
                     <div style={{ color: '#28a745', fontWeight: 'bold' }}>上游组件:</div>
                     {editingComponent.upstream && editingComponent.upstream.length > 0 ? (
-                      <ul style={{ paddingLeft: '20px', margin: '5px 0 0 0' }}>
+                      <ul style={{ paddingLeft: '15px', margin: '5px 0 0 0' }}>
                         {editingComponent.upstream.map((up, index) => (
                           <li key={index}>
                             {up.name} <span style={{ fontSize: '12px', color: '#6c757d' }}>({up.relationType})</span>
@@ -372,7 +372,7 @@ const AddComponentDependency = () => {
                   <div style={{ flex: 1 }}>
                     <div style={{ color: '#007bff', fontWeight: 'bold' }}>下游组件:</div>
                     {editingComponent.downstream && editingComponent.downstream.length > 0 ? (
-                      <ul style={{ paddingLeft: '20px', margin: '5px 0 0 0' }}>
+                      <ul style={{ paddingLeft: '15px', margin: '5px 0 0 0' }}>
                         {editingComponent.downstream.map((down, index) => (
                           <li key={index}>
                             {down.name} <span style={{ fontSize: '12px', color: '#6c757d' }}>({down.relationType})</span>
@@ -625,87 +625,91 @@ const AddComponentDependency = () => {
       </form>
       
       {/* 已有组件列表 */}
-      <div style={{ marginTop: '30px' }}>
+      <div style={{ marginTop: '20px' }}>
         <h3>已有组件列表</h3>
         {components.length > 0 ? (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f8f9fa' }}>
-                <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>ID</th>
-                <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>名称</th>
-                <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>类型</th>
-                <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>上游组件</th>
-                <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>下游组件</th>
-                <th style={{ border: '1px solid #dee2e6', padding: '8px', width: '120px' }}>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {components.map(component => (
-                <tr key={component.id}>
-                  <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>{component.id}</td>
-                  <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>{component.name}</td>
-                  <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>{component.type}</td>
-                  <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>
-                    {component.upstream && component.upstream.length > 0 ? (
-                      <div>
-                        {component.upstream.map((up, index) => (
-                          <div key={index} style={{ marginBottom: '2px' }}>
-                            <span style={{ color: '#28a745' }}>{up.name}</span>
-                            <span style={{ fontSize: '12px', color: '#6c757d', marginLeft: '5px' }}>({up.relationType})</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <span style={{ color: '#6c757d' }}>-</span>
-                    )}
-                  </td>
-                  <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>
-                    {component.downstream && component.downstream.length > 0 ? (
-                      <div>
-                        {component.downstream.map((down, index) => (
-                          <div key={index} style={{ marginBottom: '2px' }}>
-                            <span style={{ color: '#007bff' }}>{down.name}</span>
-                            <span style={{ fontSize: '12px', color: '#6c757d', marginLeft: '5px' }}>({down.relationType})</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <span style={{ color: '#6c757d' }}>-</span>
-                    )}
-                  </td>
-                  <td style={{ border: '1px solid #dee2e6', padding: '8px', textAlign: 'center' }}>
-                    <button 
-                      onClick={() => handleEditComponent(component)}
-                      style={{ 
-                        padding: '4px 8px', 
-                        backgroundColor: '#ffc107', 
-                        color: 'black', 
-                        border: 'none', 
-                        borderRadius: '4px', 
-                        cursor: 'pointer',
-                        marginRight: '5px'
-                      }}
-                    >
-                      编辑
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteComponent(component.id)}
-                      style={{ 
-                        padding: '4px 8px', 
-                        backgroundColor: '#dc3545', 
-                        color: 'white', 
-                        border: 'none', 
-                        borderRadius: '4px', 
-                        cursor: 'pointer'
-                      }}
-                    >
-                      删除
-                    </button>
-                  </td>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f8f9fa' }}>
+                  <th style={{ border: '1px solid #dee2e6', padding: '6px' }}>ID</th>
+                  <th style={{ border: '1px solid #dee2e6', padding: '6px' }}>名称</th>
+                  <th style={{ border: '1px solid #dee2e6', padding: '6px' }}>类型</th>
+                  <th style={{ border: '1px solid #dee2e6', padding: '6px' }}>上游组件</th>
+                  <th style={{ border: '1px solid #dee2e6', padding: '6px' }}>下游组件</th>
+                  <th style={{ border: '1px solid #dee2e6', padding: '6px', width: '100px' }}>操作</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {components.map(component => (
+                  <tr key={component.id}>
+                    <td style={{ border: '1px solid #dee2e6', padding: '6px' }}>{component.id}</td>
+                    <td style={{ border: '1px solid #dee2e6', padding: '6px' }}>{component.name}</td>
+                    <td style={{ border: '1px solid #dee2e6', padding: '6px' }}>{component.type}</td>
+                    <td style={{ border: '1px solid #dee2e6', padding: '6px' }}>
+                      {component.upstream && component.upstream.length > 0 ? (
+                        <div>
+                          {component.upstream.map((up, index) => (
+                            <div key={index} style={{ marginBottom: '1px' }}>
+                              <span style={{ color: '#28a745' }}>{up.name}</span>
+                              <span style={{ fontSize: '11px', color: '#6c757d', marginLeft: '3px' }}>({up.relationType})</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ color: '#6c757d' }}>-</span>
+                      )}
+                    </td>
+                    <td style={{ border: '1px solid #dee2e6', padding: '6px' }}>
+                      {component.downstream && component.downstream.length > 0 ? (
+                        <div>
+                          {component.downstream.map((down, index) => (
+                            <div key={index} style={{ marginBottom: '1px' }}>
+                              <span style={{ color: '#007bff' }}>{down.name}</span>
+                              <span style={{ fontSize: '11px', color: '#6c757d', marginLeft: '3px' }}>({down.relationType})</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ color: '#6c757d' }}>-</span>
+                      )}
+                    </td>
+                    <td style={{ border: '1px solid #dee2e6', padding: '6px', textAlign: 'center' }}>
+                      <button 
+                        onClick={() => handleEditComponent(component)}
+                        style={{ 
+                          padding: '3px 6px', 
+                          backgroundColor: '#ffc107', 
+                          color: 'black', 
+                          border: 'none', 
+                          borderRadius: '3px', 
+                          cursor: 'pointer',
+                          marginRight: '3px',
+                          fontSize: '12px'
+                        }}
+                      >
+                        编辑
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteComponent(component.id)}
+                        style={{ 
+                          padding: '3px 6px', 
+                          backgroundColor: '#dc3545', 
+                          color: 'white', 
+                          border: 'none', 
+                          borderRadius: '3px', 
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        删除
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <p>暂无组件数据</p>
         )}
