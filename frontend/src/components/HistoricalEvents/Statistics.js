@@ -51,10 +51,7 @@ const Statistics = () => {
       );
     }
 
-    const dates = statistics.recentStats.map(item => item.date);
     const totals = statistics.recentStats.map(item => item.records);
-    const successes = statistics.recentStats.map(item => item.success);
-    const failures = statistics.recentStats.map(item => item.failed);
 
     // 找到最大值用于比例计算
     const maxValue = Math.max(...totals, 1);
@@ -117,10 +114,11 @@ const Statistics = () => {
       ) : statistics ? (
         <div className="space-y-6">
           {/* 统计概览 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             {renderStatCard('总导入次数', statistics.totalImports)}
             {renderStatCard('总记录数', statistics.totalRecords)}
             {renderStatCard('成功导入', statistics.totalSuccess)}
+            {renderStatCard('重复跳过', statistics.totalDuplicates || 0)}
             {renderStatCard('导入成功率', `${statistics.successRate}%`)}
           </div>
 
@@ -165,6 +163,14 @@ const Statistics = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {statistics.totalSuccess}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      重复跳过
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {statistics.totalDuplicates || 0}
                     </td>
                   </tr>
                   <tr>

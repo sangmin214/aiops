@@ -157,6 +157,28 @@ async function summarizeEvent(eventData) {
  */
 async function addEventToKnowledgeBase(summarizedData) {
   try {
+    // 检查是否已存在相同工单号的事件
+    const existingEntry = await KnowledgeEntry.findOne({
+      source: `Historical Event (${summarizedData.ticketNum})`
+    });
+    
+    if (existingEntry) {
+      console.log(`Event with ticket number ${summarizedData.ticketNum} already exists, skipping...`);
+      // 返回对象包含标识，表示这是一个重复事件
+      return { ...existingEntry.toObject(), isDuplicate: true };
+    }
+    
+    // 检查是否存在相似的问题描述（使用简单的文本匹配）
+    const similarEntries = await KnowledgeEntry.find({
+      problem: summarizedData.problem
+    });
+    
+    // 如果存在完全相同的问题描述，标记为可能的重复
+    if (similarEntries.length > 0) {
+      console.log(`Potential duplicate event found for ticket ${summarizedData.ticketNum}. Same problem description exists.`);
+      // 可以选择跳过或添加警告，这里我们仍然添加但添加标记
+    }
+    
     // 创建知识库条目
     const knowledgeEntry = new KnowledgeEntry({
       problem: summarizedData.problem,
@@ -182,7 +204,8 @@ async function addEventToKnowledgeBase(summarizedData) {
     });
     console.log('Knowledge entry added to Qdrant vector database');
     
-    return savedEntry;
+    // 返回对象包含标识，表示这是一个新事件
+    return { ...savedEntry.toObject(), isDuplicate: false };
   } catch (error) {
     console.error('Error adding event to knowledge base:', error);
     throw error;

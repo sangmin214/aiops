@@ -95,6 +95,9 @@ const ImportHistory = () => {
                   成功
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  重复
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   失败
                 </th>
               </tr>
@@ -117,6 +120,11 @@ const ImportHistory = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                       {record.success}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                      {record.duplicates || 0}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

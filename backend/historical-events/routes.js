@@ -49,6 +49,7 @@ router.post('/historical-events/import', upload.single('file'), async (req, res)
       total: eventsData.length,
       success: 0,
       failed: 0,
+      duplicates: 0,
       errors: []
     };
     
@@ -62,10 +63,17 @@ router.post('/historical-events/import', upload.single('file'), async (req, res)
         console.log(`Summarized event ${eventData.TicketNum}`);
         
         // 将总结后的信息插入知识库
-        await addEventToKnowledgeBase(summarizedData);
-        console.log(`Added event ${eventData.TicketNum} to knowledge base`);
+        const result = await addEventToKnowledgeBase(summarizedData);
+        console.log(`Processed event ${eventData.TicketNum} for knowledge base`);
         
-        results.success++;
+        // 检查是否为重复事件
+        if (result.isDuplicate) {
+          results.duplicates++;
+          console.log(`Skipped duplicate event ${eventData.TicketNum}`);
+        } else {
+          results.success++;
+          console.log(`Added new event ${eventData.TicketNum} to knowledge base`);
+        }
       } catch (error) {
         console.error(`Failed to process event ${eventData.TicketNum}:`, error);
         results.failed++;
@@ -96,7 +104,8 @@ router.post('/historical-events/import', upload.single('file'), async (req, res)
         fileSize: req.file.size,
         total: results.total,
         success: results.success,
-        failed: results.failed
+        failed: results.failed,
+        duplicates: results.duplicates
       });
       
       // 保存到文件
@@ -161,6 +170,7 @@ router.get('/historical-events/statistics', async (req, res) => {
     const totalImports = history.length;
     const totalSuccess = history.reduce((sum, record) => sum + record.success, 0);
     const totalFailed = history.reduce((sum, record) => sum + record.failed, 0);
+    const totalDuplicates = history.reduce((sum, record) => sum + (record.duplicates || 0), 0);
     const totalRecords = history.reduce((sum, record) => sum + record.total, 0);
     
     // 按日期分组统计
@@ -191,6 +201,7 @@ router.get('/historical-events/statistics', async (req, res) => {
       totalImports,
       totalSuccess,
       totalFailed,
+      totalDuplicates,
       totalRecords,
       successRate: totalRecords > 0 ? ((totalSuccess / totalRecords) * 100).toFixed(2) : '0.00',
       recentStats

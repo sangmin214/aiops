@@ -149,7 +149,7 @@ const ImportEvents = () => {
         <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
           <h3 className="text-lg font-medium text-green-800 mb-2">导入完成</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div className="bg-white p-3 rounded-lg shadow-sm">
               <p className="text-sm text-gray-500">总条目数</p>
               <p className="text-2xl font-bold text-gray-800">{result.results.total}</p>
@@ -158,6 +158,11 @@ const ImportEvents = () => {
             <div className="bg-white p-3 rounded-lg shadow-sm">
               <p className="text-sm text-gray-500">成功导入</p>
               <p className="text-2xl font-bold text-green-600">{result.results.success}</p>
+            </div>
+            
+            <div className="bg-white p-3 rounded-lg shadow-sm">
+              <p className="text-sm text-gray-500">重复跳过</p>
+              <p className="text-2xl font-bold text-yellow-600">{result.results.duplicates || 0}</p>
             </div>
             
             <div className="bg-white p-3 rounded-lg shadow-sm">
