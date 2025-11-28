@@ -15,6 +15,21 @@ async function generateEmbedding(text) {
   try {
     console.log('Generating embedding for text:', text.substring(0, 50) + '...');
     
+    // 使用DeepSeek API生成真实的文本嵌入
+    const response = await deepseek.embeddings.create({
+      model: "text-embedding-3-small", // 使用DeepSeek支持的嵌入模型
+      input: text,
+      encoding_format: "float"
+    });
+    
+    const embedding = response.data[0].embedding;
+    console.log('Generated embedding with length:', embedding.length);
+    return embedding;
+  } catch (error) {
+    console.error('Error generating embedding with DeepSeek API:', error);
+    // 如果API调用失败，回退到旧的哈希方法
+    console.log('Falling back to hash-based embedding generation');
+    
     // 使用更复杂的哈希方法生成向量表示
     // 确保生成的向量长度为1536
     const vector = new Array(1536).fill(0);
@@ -35,11 +50,8 @@ async function generateEmbedding(text) {
       }
     }
     
-    console.log('Generated vector with length:', vector.length);
+    console.log('Generated fallback vector with length:', vector.length);
     return vector;
-  } catch (error) {
-    console.error('Error generating embedding:', error);
-    throw error;
   }
 }
 
