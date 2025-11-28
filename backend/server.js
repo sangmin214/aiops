@@ -22,6 +22,19 @@ db.once('open', () => {
 const { initCollection } = require('./knowledge/qdrant');
 initCollection();
 
+// 初始化PostgreSQL数据库和解决方案表
+const { sequelize } = require('./component/model');
+const Solution = require('./solution/model');
+
+// 同步数据库模型
+sequelize.sync()
+  .then(() => {
+    console.log('PostgreSQL database synced successfully');
+  })
+  .catch(err => {
+    console.error('Error syncing PostgreSQL database:', err);
+  });
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -192,6 +205,10 @@ app.use('/api', agentRoutes);
 // 导入历史事件管理路由
 const historicalEventsRoutes = require('./historical-events/routes');
 app.use('/api', historicalEventsRoutes);
+
+// 导入解决方案管理路由
+const solutionRoutes = require('./solution/routes');
+app.use('/api', solutionRoutes);
 
 // 导入向量搜索功能
 const { searchSimilarEntries } = require('./knowledge/qdrant');
