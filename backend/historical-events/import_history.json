@@ -1,0 +1,81 @@
+[
+  {
+    "id": "1764335186604",
+    "timestamp": "2025-11-28T13:06:26.604Z",
+    "fileName": "incidents.xlsx",
+    "fileSize": 7948,
+    "total": 10,
+    "success": 10,
+    "failed": 0
+  },
+  {
+    "id": "1764336241121",
+    "timestamp": "2025-11-28T13:24:01.121Z",
+    "fileName": "incidents.xlsx",
+    "fileSize": 7948,
+    "total": 10,
+    "success": 10,
+    "failed": 0,
+    "duplicates": 0
+  },
+  {
+    "id": "1764336390815",
+    "timestamp": "2025-11-28T13:26:30.815Z",
+    "fileName": "incidents.xlsx",
+    "fileSize": 7948,
+    "total": 10,
+    "success": 10,
+    "failed": 0,
+    "duplicates": 0
+  },
+  {
+    "id": "1764336486323",
+    "timestamp": "2025-11-28T13:28:06.323Z",
+    "fileName": "incidents.xlsx",
+    "fileSize": 7948,
+    "total": 10,
+    "success": 10,
+    "failed": 0,
+    "duplicates": 0
+  },
+  {
+    "id": "1764337226861",
+    "timestamp": "2025-11-28T13:40:26.861Z",
+    "fileName": "incidents.xlsx",
+    "fileSize": 7948,
+    "total": 10,
+    "success": 9,
+    "failed": 1,
+    "duplicates": 0
+  },
+  {
+    "id": "1764337317914",
+    "timestamp": "2025-11-28T13:41:57.914Z",
+    "fileName": "incidents.xlsx",
+    "fileSize": 7948,
+    "total": 10,
+    "success": 0,
+    "failed": 0,
+    "duplicates": 10
+  },
+  {
+    "id": "1764337725471",
+    "timestamp": "2025-11-28T13:48:45.471Z",
+    "fileName": "incidents.xlsx",
+    "fileSize": 7948,
+    "total": 10,
+    "success": 10,
+    "failed": 0,
+    "duplicates": 0
+  },
+  {
+    "id": "1764337776253",
+    "timestamp": "2025-11-28T13:49:36.253Z",
+    "fileName": "incidents.xlsx",
+    "fileSize": 7948,
+    "total": 10,
+    "success": 0,
+    "failed": 0,
+    "duplicates": 10
+  }
+]
