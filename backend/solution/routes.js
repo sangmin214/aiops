@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Solution = require('./model');
+const { Sequelize } = require('sequelize');
 
 /**
  * 创建新的解决方案
