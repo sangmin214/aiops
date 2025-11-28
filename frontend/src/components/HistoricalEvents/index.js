@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import ImportEvents from './ImportEvents';
+import ImportHistory from './ImportHistory';
+import Statistics from './Statistics';
 
 const HistoricalEvents = () => {
   const [activeTab, setActiveTab] = useState('import');
@@ -9,19 +11,9 @@ const HistoricalEvents = () => {
       case 'import':
         return <ImportEvents />;
       case 'history':
-        return (
-          <div className="bg-white shadow-xl rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">导入历史</h2>
-            <p className="text-gray-600">此功能正在开发中...</p>
-          </div>
-        );
+        return <ImportHistory />;
       case 'statistics':
-        return (
-          <div className="bg-white shadow-xl rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">统计信息</h2>
-            <p className="text-gray-600">此功能正在开发中...</p>
-          </div>
-        );
+        return <Statistics />;
       default:
         return <ImportEvents />;
     }
