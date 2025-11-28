@@ -11,6 +11,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [knowledgeEntries, setKnowledgeEntries] = useState([]);
+  const [activeTab, setActiveTab] = useState('home'); // 默认激活首页
 
   const handleProblemSubmit = async (problem) => {
     setLoading(true);
@@ -131,66 +132,146 @@ function App() {
     fetchKnowledgeEntries();
   }, []);
 
-  return (
-    <div className="App">
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">AI应用运维助手</h1>
-            <p className="text-lg text-gray-600">描述您的运维问题，AI将为您提供解决方案</p>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div>
-              <div className="bg-white shadow-xl rounded-lg p-6 mb-8">
-                <ProblemInput onSubmit={handleProblemSubmit} loading={loading} />
-              </div>
-              
-              {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-8">
-                  {error}
-                </div>
-              )}
-              
-              <div className="bg-white shadow-xl rounded-lg p-6">
-                <SolutionDisplay solution={solution} loading={loading} />
-              </div>
+  // 渲染当前激活的标签页内容
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case 'home':
+        return (
+          <div className="space-y-8">
+            <div className="bg-white shadow-xl rounded-lg p-6">
+              <ProblemInput onSubmit={handleProblemSubmit} loading={loading} />
             </div>
             
-            <div>
-              <div className="bg-white shadow-xl rounded-lg p-6 mb-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">知识库管理</h2>
-                <KnowledgeBase 
-                  entries={knowledgeEntries} 
-                  onAdd={addKnowledgeEntry}
-                  onUpdate={updateKnowledgeEntry}
-                  onDelete={deleteKnowledgeEntry}
-                  loading={loading}
-                />
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                {error}
               </div>
+            )}
+            
+            <div className="bg-white shadow-xl rounded-lg p-6">
+              <SolutionDisplay solution={solution} loading={loading} />
             </div>
           </div>
-          
-          {/* 添加组件依赖信息 */}
-          <div className="mt-8 bg-white shadow-xl rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">添加组件依赖信息</h2>
-            <AddComponentDependency />
+        );
+      case 'knowledge':
+        return (
+          <div className="bg-white shadow-xl rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">知识库管理</h2>
+            <KnowledgeBase 
+              entries={knowledgeEntries} 
+              onAdd={addKnowledgeEntry}
+              onUpdate={updateKnowledgeEntry}
+              onDelete={deleteKnowledgeEntry}
+              loading={loading}
+            />
           </div>
-          
-          {/* 组件依赖关系图 - 独立显示 */}
-          <div className="mt-8 bg-white shadow-xl rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">组件依赖关系图</h2>
-            <DependencyGraphTabs />
+        );
+      case 'dependency':
+        return (
+          <div className="space-y-8">
+            <div className="bg-white shadow-xl rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">添加组件依赖信息</h2>
+              <AddComponentDependency />
+            </div>
+            
+            <div className="bg-white shadow-xl rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">组件依赖关系图</h2>
+              <DependencyGraphTabs />
+            </div>
           </div>
-          
-          {/* Agent管理 */}
-          <div className="mt-8 bg-white shadow-xl rounded-lg p-6">
+        );
+      case 'agent':
+        return (
+          <div className="bg-white shadow-xl rounded-lg p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">分布式Agent管理</h2>
             <AgentManagement />
           </div>
+        );
+      default:
+        return (
+          <div className="bg-white shadow-xl rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">欢迎使用AI应用运维助手</h2>
+            <p className="text-gray-600">请选择左侧菜单中的功能模块开始使用。</p>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="App">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="flex">
+          {/* 左侧菜单 */}
+          <div className="w-64 bg-white shadow-lg min-h-screen">
+            <div className="p-6 border-b">
+              <h1 className="text-2xl font-bold text-gray-900">AI运维助手</h1>
+              <p className="text-sm text-gray-600 mt-1">应用运维管理平台</p>
+            </div>
+            
+            <nav className="mt-6">
+              <ul>
+                <li>
+                  <button
+                    onClick={() => setActiveTab('home')}
+                    className={`w-full text-left px-6 py-3 flex items-center transition-colors ${
+                      activeTab === 'home' 
+                        ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600' 
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="ml-3">首页</span>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setActiveTab('knowledge')}
+                    className={`w-full text-left px-6 py-3 flex items-center transition-colors ${
+                      activeTab === 'knowledge' 
+                        ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600' 
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="ml-3">知识库管理</span>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setActiveTab('dependency')}
+                    className={`w-full text-left px-6 py-3 flex items-center transition-colors ${
+                      activeTab === 'dependency' 
+                        ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600' 
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="ml-3">组件依赖</span>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setActiveTab('agent')}
+                    className={`w-full text-left px-6 py-3 flex items-center transition-colors ${
+                      activeTab === 'agent' 
+                        ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600' 
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="ml-3">Agent管理</span>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+            
+            <div className="absolute bottom-0 w-64 p-4 text-center text-sm text-gray-500 border-t">
+              <p>AI应用运维助手 v1.0</p>
+              <p className="mt-1">基于DeepSeek技术</p>
+            </div>
+          </div>
           
-          <div className="mt-8 text-center text-sm text-gray-500">
-            <p>AI应用运维助手 v1.0 · 基于DeepSeek技术</p>
+          {/* 主内容区域 */}
+          <div className="flex-1 p-8">
+            <div className="max-w-6xl mx-auto">
+              {renderActiveTab()}
+            </div>
           </div>
         </div>
       </div>
