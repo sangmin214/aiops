@@ -25,6 +25,12 @@ const KnowledgeEntrySchema = new mongoose.Schema({
     type: [Number],
     required: true
   },
+  // 来源信息
+  source: {
+    type: String,
+    required: false,
+    trim: true
+  },
   // 创建时间
   createdAt: {
     type: Date,
