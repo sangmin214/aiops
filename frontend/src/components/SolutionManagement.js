@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const SolutionManagement = ({ solutionToAdd }) => {
+const SolutionManagement = ({ solutionToAdd, onSolutionAdded }) => {
   const [solutions, setSolutions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -143,10 +143,12 @@ const SolutionManagement = ({ solutionToAdd }) => {
       setSelectedSolution(solutionToAdd);
       setModalMode('create');
       setShowModal(true);
-      // 清除预填充数据
-      // 注意：这里不直接清除solutionToAdd，因为父组件会处理
+      // 调用回调函数清除预填充数据，避免下次切换时再次弹出
+      if (onSolutionAdded) {
+        onSolutionAdded();
+      }
     }
-  }, [solutionToAdd]);
+  }, [solutionToAdd, onSolutionAdded]);
 
   // 处理搜索
   const handleSearch = (e) => {

@@ -233,7 +233,10 @@ function App() {
         );
       case 'solution':
         return (
-          <SolutionManagement solutionToAdd={solutionToAdd} />
+          <SolutionManagement 
+            solutionToAdd={solutionToAdd} 
+            onSolutionAdded={() => setSolutionToAdd(null)}
+          />
         );
       default:
         return (
