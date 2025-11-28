@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 
-const SolutionDisplay = ({ solution, loading, usedKnowledgeBase, knowledgeBaseLinks }) => {
+const SolutionDisplay = ({ solution, loading, usedKnowledgeBase, knowledgeBaseLinks, onAddToSolutions }) => {
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-4">解决方案</h2>
@@ -43,13 +43,19 @@ const SolutionDisplay = ({ solution, loading, usedKnowledgeBase, knowledgeBaseLi
             {solution}
           </div>
           
-          {/* 添加复制按钮 */}
-          <div className="mt-4 flex justify-end">
+          {/* 添加复制和添加到解决方案按钮 */}
+          <div className="mt-4 flex justify-end space-x-2">
             <button
               onClick={() => navigator.clipboard.writeText(solution)}
               className="bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-3 rounded text-sm transition duration-150 ease-in-out"
             >
               复制解决方案
+            </button>
+            <button
+              onClick={() => onAddToSolutions && onAddToSolutions(solution, usedKnowledgeBase, knowledgeBaseLinks)}
+              className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded text-sm transition duration-150 ease-in-out"
+            >
+              添加到解决方案
             </button>
           </div>
         </div>

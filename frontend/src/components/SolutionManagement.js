@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const SolutionManagement = () => {
+const SolutionManagement = ({ solutionToAdd }) => {
   const [solutions, setSolutions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -135,6 +135,18 @@ const SolutionManagement = () => {
   useEffect(() => {
     fetchSolutions();
   }, [currentPage, searchTerm]);
+  
+  // 处理预填充数据
+  useEffect(() => {
+    if (solutionToAdd) {
+      // 打开创建模态框并预填充数据
+      setSelectedSolution(solutionToAdd);
+      setModalMode('create');
+      setShowModal(true);
+      // 清除预填充数据
+      // 注意：这里不直接清除solutionToAdd，因为父组件会处理
+    }
+  }, [solutionToAdd]);
 
   // 处理搜索
   const handleSearch = (e) => {
@@ -391,6 +403,13 @@ const SolutionModal = ({ solution, mode, onClose, onCreate, onUpdate, onCopy }) 
       source: 'manual'
     }
   );
+  
+  // 当solution变化时更新表单数据
+  useEffect(() => {
+    if (solution) {
+      setFormData(solution);
+    }
+  }, [solution]);
   const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

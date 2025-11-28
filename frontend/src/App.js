@@ -18,6 +18,9 @@ function App() {
   // 新增状态用于存储是否使用了知识库以及知识库链接
   const [usedKnowledgeBase, setUsedKnowledgeBase] = useState(undefined);
   const [knowledgeBaseLinks, setKnowledgeBaseLinks] = useState([]);
+  
+  // 新增状态用于存储要添加到解决方案的数据
+  const [solutionToAdd, setSolutionToAdd] = useState(null);
 
   const handleProblemSubmit = async (problem) => {
     setLoading(true);
@@ -53,6 +56,26 @@ function App() {
     } finally {
       setLoading(false);
     }
+  };
+  
+  // 处理添加到解决方案
+  const handleAddToSolutions = (solutionContent, usedKB, kbLinks) => {
+    // 切换到解决方案标签页
+    setActiveTab('solution');
+    
+    // 准备要添加的解决方案数据
+    const solutionData = {
+      title: 'AI生成的解决方案 - ' + new Date().toLocaleString('zh-CN'),
+      content: solutionContent,
+      problem: '通过AI自动生成的解决方案',
+      tags: usedKB ? ['AI生成', '知识库'] : ['AI生成'],
+      isExecutable: false,
+      executableScript: '',
+      source: 'AI'
+    };
+    
+    // 设置要添加的解决方案数据
+    setSolutionToAdd(solutionData);
   };
 
   // 获取知识库条目
@@ -165,6 +188,7 @@ function App() {
                 loading={loading} 
                 usedKnowledgeBase={usedKnowledgeBase}
                 knowledgeBaseLinks={knowledgeBaseLinks}
+                onAddToSolutions={handleAddToSolutions}
               />
             </div>
           </div>
@@ -209,7 +233,7 @@ function App() {
         );
       case 'solution':
         return (
-          <SolutionManagement />
+          <SolutionManagement solutionToAdd={solutionToAdd} />
         );
       default:
         return (
