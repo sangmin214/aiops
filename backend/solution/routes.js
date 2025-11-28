@@ -177,14 +177,49 @@ router.post('/solutions/:id/execute', async (req, res) => {
       return res.status(400).json({ error: 'No executable script found' });
     }
     
-    // 这里应该调用agent执行脚本，但暂时返回模拟结果
-    // 在实际实现中，我们会将脚本发送到指定的agent执行
-    res.json({
-      message: 'Script execution started',
-      solutionId: solution.id,
-      script: solution.executableScript,
-      status: 'pending'
-    });
+    // 获取已注册的agents
+    const { registeredAgents } = require('../server');
+      
+    // 查找一个在线的agent来执行脚本
+    let targetAgent = null;
+    let targetAgentId = null;
+      
+    for (const [agentId, agent] of Object.entries(registeredAgents)) {
+      // 检查agent是否在线（3分钟内有心跳）
+      if (agent.lastHeartbeat && (new Date() - new Date(agent.lastHeartbeat)) < 180000) {
+        targetAgent = agent;
+        targetAgentId = agentId;
+        break;
+      }
+    }
+      
+    if (!targetAgent) {
+      return res.status(400).json({ error: 'No online agent available to execute the script' });
+    }
+      
+    // 通过WebSocket发送命令到agent
+    if (targetAgent.websocket && targetAgent.websocket.readyState === 1) { // 1 = OPEN
+      targetAgent.websocket.send(JSON.stringify({
+        type: 'command',
+        command: solution.executableScript
+      }));
+        
+      console.log(`Script sent to agent ${targetAgentId} for execution: ${solution.executableScript}`);
+        
+      res.json({
+        message: 'Script execution started',
+        solutionId: solution.id,
+        agentId: targetAgentId,
+        script: solution.executableScript,
+        status: 'sent'
+      });
+    } else {
+      console.log(`WebSocket not ready for agent ${targetAgentId}. Ready state: ${targetAgent.websocket ? targetAgent.websocket.readyState : 'no websocket'}`);
+      return res.status(503).json({ 
+        error: 'Agent is not connected via WebSocket',
+        agentId: targetAgentId
+      });
+    }
   } catch (error) {
     console.error('Error executing solution:', error);
     res.status(500).json({ error: 'Failed to execute solution' });
