@@ -4,6 +4,7 @@ import SolutionDisplay from './components/SolutionDisplay';
 import KnowledgeBase from './components/KnowledgeBase';
 import DependencyGraphTabs from './DependencyGraphTabs';
 import AddComponentDependency from './AddComponentDependency';
+import ComponentDependencyManagement from './ComponentDependencyManagement';
 import AgentManagement from './components/AgentManagement';
 import HistoricalEvents from './components/HistoricalEvents';
 import SolutionManagement from './components/SolutionManagement';
@@ -229,13 +230,9 @@ function App() {
         );
       case 'dependency':
         return (
-          <div className="space-y-8">
-            <div className="bg-white shadow-xl rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">添加组件依赖信息</h2>
-              <AddComponentDependency />
-            </div>
-            
-            <div className="bg-white shadow-xl rounded-lg p-6">
+          <div className="bg-white shadow-xl rounded-lg p-6">
+            <ComponentDependencyManagement />
+            <div className="mt-8 bg-white shadow-xl rounded-lg p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-4">组件依赖关系图</h2>
               <DependencyGraphTabs />
             </div>

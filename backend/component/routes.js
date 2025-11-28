@@ -1,7 +1,29 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const { Component, ComponentRelation, sequelize } = require('./model');
 const { Op } = require('sequelize');
+const { parseExcelFile, processComponentDependencies } = require('./excelImport');
+
+// 配置multer用于处理文件上传
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    // 只允许Excel文件
+    if (file.mimetype.includes('spreadsheetml') || 
+        file.mimetype.includes('excel') || 
+        file.originalname.endsWith('.xlsx') || 
+        file.originalname.endsWith('.xls')) {
+      cb(null, true);
+    } else {
+      cb(new Error('只允许上传Excel文件 (.xlsx, .xls)'), false);
+    }
+  },
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 限制文件大小为10MB
+  }
+});
 
 // 测试路由
 router.get('/test', (req, res) => {
@@ -343,6 +365,33 @@ router.post('/init-db', async (req, res) => {
   } catch (error) {
     console.error('Error initializing database:', error);
     res.status(500).json({ error: 'Failed to initialize database' });
+  }
+});
+
+// 导入组件依赖Excel文件
+router.post('/import-excel', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: '请上传Excel文件' });
+    }
+
+    console.log('Processing Excel file import...');
+    
+    // 解析Excel文件
+    const excelData = parseExcelFile(req.file.buffer);
+    console.log(`Parsed ${excelData.length} rows from Excel file`);
+    
+    // 处理组件依赖数据
+    const results = await processComponentDependencies(excelData);
+    console.log('Component dependencies processed successfully');
+    
+    res.json({
+      message: '组件依赖导入完成',
+      results
+    });
+  } catch (error) {
+    console.error('Error importing component dependencies:', error);
+    res.status(500).json({ error: `导入组件依赖失败: ${error.message}` });
   }
 });
 
