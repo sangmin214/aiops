@@ -21,7 +21,8 @@ const AddComponentDependency = () => {
   const [editingComponent, setEditingComponent] = useState(null);
 
   // 获取所有组件
-  // 获取组件的依赖关系
+  // 获取组件的依赖关系（暂时未使用）
+  /*
   const fetchComponentDependencies = async (componentName) => {
     try {
       const response = await fetch(`http://localhost:3001/api/component/component-dependencies/${componentName}`);
@@ -35,6 +36,7 @@ const AddComponentDependency = () => {
       return null;
     }
   };
+  */
 
   // 获取所有组件及其依赖关系
 
@@ -173,7 +175,8 @@ const AddComponentDependency = () => {
     setEditingComponent(component);
   };
 
-  // 添加新的依赖关系
+  // 添加新的依赖关系（暂时未使用）
+  /*
   const handleAddDependency = async (componentId, upstreamId, downstreamId, relationType) => {
     try {
       // 这里应该调用后端API来添加新的依赖关系
@@ -183,7 +186,7 @@ const AddComponentDependency = () => {
     }
   };
 
-  // 删除依赖关系
+  // 删除依赖关系（暂时未使用）
   const handleDeleteDependency = async (relationId) => {
     try {
       // 这里应该调用后端API来删除依赖关系
@@ -193,7 +196,7 @@ const AddComponentDependency = () => {
     }
   };
 
-  // 更新依赖关系
+  // 更新依赖关系（暂时未使用）
   const handleUpdateDependency = async (relationId, relationType) => {
     try {
       // 这里应该调用后端API来更新依赖关系
@@ -202,6 +205,7 @@ const AddComponentDependency = () => {
       console.error('Error updating dependency:', err);
     }
   };
+  */
 
 
 
@@ -630,7 +634,6 @@ const AddComponentDependency = () => {
                 <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>ID</th>
                 <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>名称</th>
                 <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>类型</th>
-                <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>描述</th>
                 <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>上游组件</th>
                 <th style={{ border: '1px solid #dee2e6', padding: '8px' }}>下游组件</th>
                 <th style={{ border: '1px solid #dee2e6', padding: '8px', width: '120px' }}>操作</th>
@@ -642,7 +645,6 @@ const AddComponentDependency = () => {
                   <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>{component.id}</td>
                   <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>{component.name}</td>
                   <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>{component.type}</td>
-                  <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>{component.description || '-'}</td>
                   <td style={{ border: '1px solid #dee2e6', padding: '8px' }}>
                     {component.upstream && component.upstream.length > 0 ? (
                       <div>
