@@ -17,7 +17,7 @@ const SolutionManagement = () => {
     setError('');
     
     try {
-      const response = await fetch(`http://localhost:3001/api/solutions?page=${currentPage}&search=${searchTerm}`);
+      const response = await fetch(`/api/solutions?page=${currentPage}&search=${searchTerm}`);
       const data = await response.json();
       
       if (response.ok) {
@@ -36,7 +36,7 @@ const SolutionManagement = () => {
   // 创建新解决方案
   const createSolution = async (solutionData) => {
     try {
-      const response = await fetch('http://localhost:3001/api/solutions', {
+      const response = await fetch('/api/solutions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ const SolutionManagement = () => {
   // 更新解决方案
   const updateSolution = async (id, solutionData) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/solutions/${id}`, {
+      const response = await fetch(`/api/solutions/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ const SolutionManagement = () => {
     }
     
     try {
-      const response = await fetch(`http://localhost:3001/api/solutions/${id}`, {
+      const response = await fetch(`/api/solutions/${id}`, {
         method: 'DELETE',
       });
       
@@ -108,7 +108,7 @@ const SolutionManagement = () => {
   // 执行解决方案
   const executeSolution = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/solutions/${id}/execute`, {
+      const response = await fetch(`/api/solutions/${id}/execute`, {
         method: 'POST',
       });
       
