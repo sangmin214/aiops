@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertToSolution }) => {
+const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertToSolution, fetchEntries }) => {
   const [showForm, setShowForm] = useState(false);
   const [showImportForm, setShowImportForm] = useState(false); // 添加导入表单状态
   const [editingId, setEditingId] = useState(null);
@@ -14,6 +14,27 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
   const [isSearching, setIsSearching] = useState(false); // 添加搜索状态
   const [importFile, setImportFile] = useState(null); // 添加导入文件状态
   const [importLoading, setImportLoading] = useState(false); // 添加导入加载状态
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalEntries: 0,
+    hasNextPage: false,
+    hasPrevPage: false
+  }); // 添加分页状态
+
+  // 当分页信息改变时，获取对应页面的数据
+  useEffect(() => {
+    const fetchPageData = async () => {
+      if (fetchEntries) {
+        const paginationInfo = await fetchEntries(pagination.currentPage, 10);
+        if (paginationInfo) {
+          setPagination(paginationInfo);
+        }
+      }
+    };
+
+    fetchPageData();
+  }, [pagination.currentPage]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -32,6 +53,13 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
         setNewEntry({ problem: '', rootCause: '', solution: '' });
         setShowForm(false);
         setEditingId(null);
+        // 重新获取当前页数据
+        if (fetchEntries) {
+          const paginationInfo = await fetchEntries(pagination.currentPage, 10);
+          if (paginationInfo) {
+            setPagination(paginationInfo);
+          }
+        }
       } else {
         alert(result.message);
       }
@@ -41,6 +69,16 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
       if (result.success) {
         setNewEntry({ problem: '', rootCause: '', solution: '' });
         setShowForm(false);
+        // 重新获取当前页数据
+        if (fetchEntries) {
+          const paginationInfo = await fetchEntries(1, 10); // 添加后回到第一页
+          if (paginationInfo) {
+            setPagination({
+              ...paginationInfo,
+              currentPage: 1
+            });
+          }
+        }
       } else {
         alert(result.message);
       }
@@ -54,6 +92,13 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
       if (searchResults.length > 0) {
         setSearchResults([]);
         setSearchQuery('');
+      }
+      // 重新获取当前页数据
+      if (fetchEntries) {
+        const paginationInfo = await fetchEntries(pagination.currentPage, 10);
+        if (paginationInfo) {
+          setPagination(paginationInfo);
+        }
       }
     }
   };
@@ -79,6 +124,16 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
     setNewEntry({ problem: '', rootCause: '', solution: '' });
     setShowForm(false);
     setEditingId(null);
+  };
+
+  // 处理分页导航
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setPagination(prev => ({
+        ...prev,
+        currentPage: newPage
+      }));
+    }
   };
 
   // 处理搜索功能
@@ -160,6 +215,16 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
         setImportFile(null);
         setShowImportForm(false);
         // 不再调用onAdd，因为父组件应该通过其他方式（如轮询或WebSocket）获取更新
+        // 重新获取当前页数据
+        if (fetchEntries) {
+          const paginationInfo = await fetchEntries(1, 10); // 导入后回到第一页
+          if (paginationInfo) {
+            setPagination({
+              ...paginationInfo,
+              currentPage: 1
+            });
+          }
+        }
       } else {
         if (response.status === 409) {
           alert(`导入失败: ${data.error}\n\n您可以选择更新现有的同名SOP文档，或者重命名当前文件后重新导入。`);
@@ -365,6 +430,31 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
           <p className="text-gray-500 text-center py-4">暂无知识库条目</p>
         )}
       </div>
+      
+      {/* 分页控件 */}
+      {pagination.totalPages > 1 && (
+        <div className="flex justify-center items-center mt-6 space-x-2">
+          <button
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={!pagination.hasPrevPage}
+            className="px-3 py-1 rounded-md bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300"
+          >
+            上一页
+          </button>
+          
+          <span className="text-gray-700">
+            第 {pagination.currentPage} 页，共 {pagination.totalPages} 页
+          </span>
+          
+          <button
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={!pagination.hasNextPage}
+            className="px-3 py-1 rounded-md bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300"
+          >
+            下一页
+          </button>
+        </div>
+      )}
     </div>
   );
 };

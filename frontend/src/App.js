@@ -100,12 +100,13 @@ function App() {
   };
 
   // 获取知识库条目
-  const fetchKnowledgeEntries = async () => {
+  const fetchKnowledgeEntries = async (page = 1, limit = 10) => {
     try {
-      const response = await fetch('http://localhost:3001/api/knowledge');
+      const response = await fetch(`http://localhost:3001/api/knowledge?page=${page}&limit=${limit}`);
       const data = await response.json();
       if (response.ok) {
-        setKnowledgeEntries(data);
+        setKnowledgeEntries(data.entries);
+        return data.pagination; // 返回分页信息
       }
     } catch (error) {
       console.error('获取知识库条目失败:', error);
@@ -225,6 +226,7 @@ function App() {
               onDelete={deleteKnowledgeEntry}
               onConvertToSolution={handleConvertToSolution}
               loading={loading}
+              fetchEntries={fetchKnowledgeEntries}
             />
           </div>
         );

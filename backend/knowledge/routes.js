@@ -92,11 +92,37 @@ router.post('/knowledge', async (req, res) => {
 /**
  * 获取所有知识库条目
  * @route GET /api/knowledge
+ * @param {number} page - 页码（可选，默认为1）
+ * @param {number} limit - 每页条数（可选，默认为10）
  */
 router.get('/knowledge', async (req, res) => {
   try {
-    const entries = await KnowledgeEntry.find().sort({ createdAt: -1 });
-    res.json(entries);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    
+    // 获取总条目数
+    const totalEntries = await KnowledgeEntry.countDocuments();
+    
+    // 获取当前页的条目
+    const entries = await KnowledgeEntry.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    
+    // 计算总页数
+    const totalPages = Math.ceil(totalEntries / limit);
+    
+    res.json({
+      entries,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalEntries,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      }
+    });
   } catch (error) {
     console.error('Error fetching knowledge entries:', error);
     res.status(500).json({ error: 'Failed to fetch knowledge entries' });
