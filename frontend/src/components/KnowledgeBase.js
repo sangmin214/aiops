@@ -50,6 +50,11 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
   const handleDelete = async (id) => {
     if (window.confirm('确定要删除这个知识库条目吗？')) {
       await onDelete(id);
+      // 清除搜索结果以确保界面正确更新
+      if (searchResults.length > 0) {
+        setSearchResults([]);
+        setSearchQuery('');
+      }
     }
   };
 
