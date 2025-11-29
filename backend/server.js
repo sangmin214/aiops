@@ -55,7 +55,14 @@ module.exports.getRegisteredAgents = () => registeredAgents;
 module.exports.registeredAgents = registeredAgents;
 
 // 添加中间件来解析JSON请求体（必须在路由之前）
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// 添加字符编码中间件
+app.use((req, res, next) => {
+  req.headers['content-type'] = req.headers['content-type'] || 'application/json; charset=utf-8';
+  next();
+});
 
 // CORS配置 - 手动设置CORS头部（放在所有路由之前）
 app.use((req, res, next) => {

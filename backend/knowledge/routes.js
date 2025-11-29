@@ -14,9 +14,10 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024, // 限制文件大小为5MB
   },
+  preservePath: true, // 保留文件路径中的特殊字符
   fileFilter: (req, file, cb) => {
     // 确保文件名正确解码
-    const fileName = file.originalname;
+    const fileName = Buffer.from(file.originalname, 'binary').toString('utf8');
     
     // 接受Word文档和Markdown文档
     if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
@@ -240,7 +241,7 @@ router.post('/knowledge/import-document', upload.single('file'), async (req, res
     }
 
     // 确保文件名正确解码，特别是对于中文文件名
-    const fileName = req.file.originalname;
+    const fileName = Buffer.from(req.file.originalname, 'binary').toString('utf8');
     console.log('Processing document import...', fileName);
     
     // 检查是否已存在相同文件名的SOP
