@@ -18,6 +18,7 @@ Our solution addresses these challenges by providing an AI-powered platform that
 - Vector-based semantic search for finding relevant solutions
 - Support for importing documentation in Word and Markdown formats
 - Excel import functionality for historical event data with deduplication
+- Rating system for knowledge base entries (1-5 stars)
 
 ### 3. Component Dependency Management
 - Visualization of application components and their dependencies
@@ -47,20 +48,20 @@ Our solution addresses these challenges by providing an AI-powered platform that
 ┌─────────────────┐    HTTP    ┌──────────────────┐
 │   User Browser   │ ──────────▶ │  Frontend Server  │
 └─────────────────┘            └──────────────────┘
-                                       │
-                               HTTP API│
-                                       ▼
-                             ┌──────────────────┐
-                             │  Backend API      │
-                             └──────────────────┘
-                     ┌─────────────┼─────────────┼──────────────┐
-                     │             │             │              │
-             MongoDB API     Qdrant API    PostgreSQL API   DeepSeek API
-                     │             │             │              │
-                     ▼             ▼             ▼              ▼
-              ┌──────────┐  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-              │ MongoDB  │  │   Qdrant    │ │  PostgreSQL │ │  DeepSeek   │
-              └──────────┘  └─────────────┘ └─────────────┘ └─────────────┘
+                                      │
+                              HTTP API│
+                                      ▼
+                            ┌──────────────────┐
+                            │  Backend API      │
+                            └──────────────────┘
+                    ┌─────────────┼─────────────┼──────────────┐
+                    │             │             │              │
+            MongoDB API     Qdrant API    PostgreSQL API   DeepSeek API
+                    │             │             │              │
+                    ▼             ▼             ▼              ▼
+             ┌──────────┐  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+             │ MongoDB  │  │   Qdrant    │ │  PostgreSQL │ │  DeepSeek   │
+             └──────────┘  └─────────────┘ └─────────────┘ └─────────────┘
 ```
 
 ### Technology Stack
@@ -87,7 +88,7 @@ Our solution addresses these challenges by providing an AI-powered platform that
 #### Frontend Application (React)
 - **Problem Input Interface**: Allows users to describe issues in natural language
 - **Solution Display**: Presents AI-generated solutions with execution capabilities
-- **Knowledge Base Management**: UI for managing operational knowledge
+- **Knowledge Base Management**: UI for managing operational knowledge with rating support
 - **Component Dependency Visualization**: Interactive graphs for system architecture
 - **Agent Management Dashboard**: Real-time monitoring of distributed agents
 - **Historical Event Analysis**: Tools for reviewing past incidents and trends
