@@ -1,94 +1,117 @@
-# AI Integrated Application Operations Tool (AI-Ops Tool)
+# AI-powered Business Process Automation
 
-This is an application operations tool integrated with AI large models, allowing users to describe problems in natural language and obtain solutions.
+## Problem Statement
 
-## Features
+Modern IT operations teams face increasing complexity in managing application infrastructure and resolving incidents. Traditional approaches often require manual intervention, extensive documentation searches, and specialized expertise. This leads to longer resolution times, increased operational costs, and potential service disruptions.
 
-1. AI Large Model Integration - Users can describe operations problems in natural language
-2. Intelligent Solution Generation - Provide detailed solutions based on problem descriptions
-3. Application Operations Focused - Optimized for common application operations scenarios
-4. Knowledge Base Management - Store and manage operations knowledge
-5. Component Dependency Management - Manage application components and their dependencies
-6. Distributed Agent Management - Manage monitoring agents deployed on different nodes
-7. Historical Event Management - Record and analyze historical operations events
+Our solution addresses these challenges by providing an AI-powered platform that automates business process identification, analysis, and optimization through intelligent problem-solving capabilities.
 
-## Project Structure
+## Key Features Implemented
 
-```
-aiops-tool/
-├── backend/          # Backend services
-│   ├── agent/        # Agent management module
-│   ├── component/    # Component dependency management module
-│   ├── historical-events/  # Historical event management module
-│   ├── knowledge/    # Knowledge base management module
-│   ├── solution/     # Solution management module
-│   └── server.js     # Backend main service
-├── frontend/         # Frontend interface
-└── README.md
-```
-
-## Technology Stack
-
-- Frontend: React + TailwindCSS
-- Backend: Node.js + Express
-- Databases: PostgreSQL (component dependencies), MongoDB (knowledge base and solutions)
-- AI Integration: DeepSeek API
-- Containerization: Docker Compose
-
-## Detailed Module Introduction
-
-### Solution Management
+### 1. AI-Powered Problem Solving
 - Natural language problem description to solution conversion
-- Solution creation, editing, and deletion
-- Conversion from knowledge base entries to solutions
+- Integration with DeepSeek AI for intelligent solution generation
+- Context-aware recommendations based on historical knowledge base
 
-### Knowledge Base Management
-- CRUD operations for operations knowledge
-- Vectorized storage of knowledge entries
-- Integration with solutions
+### 2. Knowledge Management System
+- Comprehensive knowledge base for storing operational procedures
+- Vector-based semantic search for finding relevant solutions
+- Support for importing documentation in Word and Markdown formats
+- Excel import functionality for historical event data with deduplication
 
-### Component Dependency Management
-- Visualization of components and their dependencies
-- Manual addition of component dependencies
-- Batch import of component dependencies via Excel
-- Component dependency graph display
+### 3. Component Dependency Management
+- Visualization of application components and their dependencies
+- Manual and batch (Excel) component dependency management
+- Interactive dependency graphs for better system understanding
 
-### Distributed Agent Management
-- Agent registration and status monitoring
-- CRUD operations for agents
+### 4. Distributed Agent Framework
+- Remote agent deployment for distributed system monitoring
+- Command execution capabilities across multiple nodes
+- Real-time agent status monitoring and management
 
-### Historical Event Management
-- Recording and querying of operations events
-- Statistical analysis of historical events
-- Excel import of historical events (with deduplication support)
+### 5. Historical Event Analysis
+- Recording and analysis of past operational events
+- Statistical reporting and trend identification
+- Import functionality for historical data analysis
 
-## Quick Start
+### 6. Solution Management
+- Complete CRUD operations for solutions
+- Conversion from knowledge base entries to executable solutions
+- Solution execution with agent integration
+- Pagination with 10 items per page for better usability
 
-1. Start infrastructure services:
-   ```bash
-   ./start-postgresql.sh
-   ./start-mongodb.sh
-   ./start-qdrant.sh
-   ```
+## Technical Design & Architecture
 
-2. Start backend service:
-   ```bash
-   cd backend
-   npm install
-   node server.js
-   ```
+### System Architecture
+```
+┌─────────────────┐    HTTP    ┌──────────────────┐
+│   User Browser   │ ──────────▶ │  Frontend Server  │
+└─────────────────┘            └──────────────────┘
+                                       │
+                               HTTP API│
+                                       ▼
+                             ┌──────────────────┐
+                             │  Backend API      │
+                             └──────────────────┘
+                     ┌─────────────┼─────────────┼──────────────┐
+                     │             │             │              │
+             MongoDB API     Qdrant API    PostgreSQL API   DeepSeek API
+                     │             │             │              │
+                     ▼             ▼             ▼              ▼
+              ┌──────────┐  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+              │ MongoDB  │  │   Qdrant    │ │  PostgreSQL │ │  DeepSeek   │
+              └──────────┘  └─────────────┘ └─────────────┘ └─────────────┘
+```
 
-3. Start frontend service:
-   ```bash
-   cd frontend
-   npm install
-   npm start
-   ```
+### Technology Stack
+- **Frontend**: React.js with TailwindCSS for responsive UI
+- **Backend**: Node.js with Express.js framework
+- **Databases**: 
+  - MongoDB for knowledge base storage
+  - PostgreSQL for component dependencies and solutions
+  - Qdrant for vector-based semantic search
+- **AI Integration**: DeepSeek API for intelligent problem solving
+- **Containerization**: Docker for service deployment
+- **Communication**: RESTful APIs and WebSocket for real-time updates
 
-4. Access the application:
-   Frontend: http://localhost:3002
-   Backend API: http://localhost:3001
+### Core Modules
 
-## Deployment
+#### Backend Services (Node.js/Express)
+- **Problem Solving Service**: Integrates with DeepSeek API to generate solutions from natural language descriptions
+- **Knowledge Management Service**: Handles CRUD operations for knowledge base entries with vector embedding
+- **Component Dependency Service**: Manages application components and their relationships
+- **Agent Management Service**: Coordinates distributed agents for remote command execution
+- **Historical Event Service**: Processes and analyzes historical operational data
+- **Solution Management Service**: Provides complete lifecycle management for solutions
 
-Refer to the [DEPLOYMENT.md](DEPLOYMENT.md) file for detailed deployment instructions.
+#### Frontend Application (React)
+- **Problem Input Interface**: Allows users to describe issues in natural language
+- **Solution Display**: Presents AI-generated solutions with execution capabilities
+- **Knowledge Base Management**: UI for managing operational knowledge
+- **Component Dependency Visualization**: Interactive graphs for system architecture
+- **Agent Management Dashboard**: Real-time monitoring of distributed agents
+- **Historical Event Analysis**: Tools for reviewing past incidents and trends
+
+#### Database Schema
+- **MongoDB Collections**: Knowledge entries with vector embeddings for semantic search
+- **PostgreSQL Tables**: 
+  - Components table for application elements
+  - Component relations table for dependency tracking
+  - Solutions table for executable problem resolutions
+- **Qdrant Collections**: Vector storage for semantic similarity matching
+
+### Data Flow
+1. User describes a problem through the frontend interface
+2. Backend service generates vector embedding of the problem description
+3. Semantic search is performed against the knowledge base using Qdrant
+4. Relevant knowledge entries are retrieved and provided as context to DeepSeek API
+5. AI generates a solution based on the problem and context
+6. Solution is stored in PostgreSQL and presented to the user
+7. Users can execute solutions through distributed agents when needed
+
+### Deployment Architecture
+- **Infrastructure Services**: MongoDB, PostgreSQL, and Qdrant run in Docker containers
+- **Backend Service**: Node.js application exposing RESTful APIs
+- **Frontend Service**: React application served through a web server
+- **Distributed Agents**: Lightweight Node.js applications deployed on target systems
+- **AI Service**: External DeepSeek API integration
