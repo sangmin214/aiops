@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertToSolution }) => {
   const [showForm, setShowForm] = useState(false);
+  const [showImportForm, setShowImportForm] = useState(false); // 添加导入表单状态
   const [editingId, setEditingId] = useState(null);
   const [newEntry, setNewEntry] = useState({
     problem: '',
@@ -11,6 +12,8 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
   const [searchQuery, setSearchQuery] = useState(''); // 添加搜索查询状态
   const [searchResults, setSearchResults] = useState([]); // 添加搜索结果状态
   const [isSearching, setIsSearching] = useState(false); // 添加搜索状态
+  const [importFile, setImportFile] = useState(null); // 添加导入文件状态
+  const [importLoading, setImportLoading] = useState(false); // 添加导入加载状态
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -105,6 +108,67 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
     setSearchResults([]);
   };
 
+  // 处理文件选择
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // 检查文件类型
+      if (!file.name.endsWith('.doc') && !file.name.endsWith('.docx')) {
+        alert('请选择Word文档文件 (.doc 或 .docx)');
+        return;
+      }
+      
+      // 检查文件大小 (最大5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('文件大小不能超过5MB');
+        return;
+      }
+      
+      setImportFile(file);
+    }
+  };
+
+  // 处理Word文档导入
+  const handleImportSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!importFile) {
+      alert('请选择一个Word文档文件');
+      return;
+    }
+    
+    setImportLoading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', importFile);
+      
+      const response = await fetch('http://localhost:3001/api/knowledge/import-word', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert('SOP文档导入成功！');
+        setImportFile(null);
+        setShowImportForm(false);
+        // 触发父组件刷新数据
+        if (onAdd) {
+          onAdd(data.entry);
+        }
+      } else {
+        alert(`导入失败: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('导入错误:', error);
+      alert(`导入过程中发生错误: ${error.message}`);
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
   // 确定要显示的条目（搜索结果优先，否则显示所有条目）
   const displayEntries = searchResults.length > 0 ? searchResults : entries;
 
@@ -112,12 +176,20 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
     <div>
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-semibold text-gray-800">知识库条目</h3>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-        >
-          {showForm ? '取消' : '添加条目'}
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setShowImportForm(!showImportForm)}
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+          >
+            {showImportForm ? '取消导入' : '导入SOP'}
+          </button>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            {showForm ? '取消' : '添加条目'}
+          </button>
+        </div>
       </div>
 
       {/* 搜索表单 */}
@@ -153,6 +225,40 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
           </div>
         )}
       </form>
+
+      {showImportForm && (
+        <form onSubmit={handleImportSubmit} className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+          <h4 className="text-lg font-medium text-gray-800 mb-3">导入Word格式SOP文档</h4>
+          <div className="mb-3">
+            <label className="block text-sm font-medium text-gray-700 mb-1">选择Word文档</label>
+            <input
+              type="file"
+              accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              onChange={handleFileChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {importFile && (
+              <p className="mt-1 text-sm text-gray-600">已选择: {importFile.name}</p>
+            )}
+          </div>
+          <div className="flex space-x-2">
+            <button
+              type="submit"
+              disabled={importLoading || !importFile}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
+            >
+              {importLoading ? '导入中...' : '导入文档'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowImportForm(false)}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+            >
+              取消
+            </button>
+          </div>
+        </form>
+      )}
 
       {showForm && (
         <form onSubmit={handleSubmit} className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">

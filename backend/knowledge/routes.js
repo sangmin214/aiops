@@ -1,9 +1,30 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const multer = require('multer');
 const KnowledgeEntry = require('./models');
 const { generateKnowledgeEmbedding } = require('./embedding');
 const { addKnowledgeEntry } = require('./qdrant');
+const { parseWordDocument } = require('./wordImport');
+
+// 配置multer用于文件上传
+const upload = multer({
+  storage: multer.memoryStorage(), // 将文件存储在内存中
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 限制文件大小为5MB
+  },
+  fileFilter: (req, file, cb) => {
+    // 只接受Word文档
+    if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+        file.mimetype === 'application/msword' ||
+        file.originalname.endsWith('.docx') ||
+        file.originalname.endsWith('.doc')) {
+      cb(null, true);
+    } else {
+      cb(new Error('只支持Word文档格式 (.doc, .docx)'), false);
+    }
+  }
+});
 
 /**
  * 创建新的知识库条目
@@ -196,6 +217,57 @@ router.put('/knowledge/:id', async (req, res) => {
   } catch (error) {
     console.error('Error updating knowledge entry:', error);
     res.status(500).json({ error: 'Failed to update knowledge entry' });
+  }
+});
+
+/**
+ * 导入Word格式的SOP文档
+ * @route POST /api/knowledge/import-word
+ * @param {File} file - Word文档文件
+ */
+router.post('/knowledge/import-word', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: '请上传Word文档文件' });
+    }
+
+    console.log('Processing Word document import...');
+    
+    // 解析Word文档
+    const sopInfo = await parseWordDocument(req.file.buffer);
+    console.log('Parsed SOP info:', sopInfo);
+    
+    // 创建知识库条目
+    const knowledgeEntry = new KnowledgeEntry({
+      problem: sopInfo.problem,
+      rootCause: sopInfo.rootCause,
+      solution: sopInfo.solution
+    });
+    
+    // 生成向量嵌入
+    const embedding = await generateKnowledgeEmbedding(knowledgeEntry);
+    knowledgeEntry.embedding = embedding;
+    
+    // 保存到MongoDB
+    const savedEntry = await knowledgeEntry.save();
+    console.log('Knowledge entry saved to MongoDB:', savedEntry._id);
+    
+    // 添加到向量数据库
+    await addKnowledgeEntry(savedEntry._id.toString(), embedding, {
+      problem: savedEntry.problem,
+      rootCause: savedEntry.rootCause,
+      solution: savedEntry.solution,
+      createdAt: savedEntry.createdAt
+    });
+    console.log('Knowledge entry added to Qdrant vector database');
+    
+    res.status(201).json({
+      message: 'SOP文档导入成功',
+      entry: savedEntry
+    });
+  } catch (error) {
+    console.error('Error importing Word document:', error);
+    res.status(500).json({ error: `导入SOP文档失败: ${error.message}` });
   }
 });
 
