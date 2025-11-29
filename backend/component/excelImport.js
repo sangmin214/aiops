@@ -74,154 +74,106 @@ async function processComponentDependencies(data) {
   const processedComponents = new Map();
 
   try {
-    // 首先收集所有需要的组件名称（包括name、source和destination字段）
-    const allComponentNames = new Set();
-    for (const item of data) {
-      allComponentNames.add(item.name.trim());
-      allComponentNames.add(item.source.trim());
-      allComponentNames.add(item.destination.trim());
-    }
-    
-    // 首先确保所有需要的组件都存在
-    for (const componentName of allComponentNames) {
-      if (!componentName) continue; // 跳过空名称
-      
-      try {
-        // 检查组件是否已存在
-        let component = processedComponents.get(componentName);
-        if (!component) {
-          component = await Component.findOne({ where: { name: componentName } });
-        }
-        
-        // 如果组件不存在，则创建新组件
-        if (!component) {
-          // 查找该组件在原始数据中的类型信息
-          let componentType = 'unknown';
-          const componentData = data.find(item => item.name.trim() === componentName);
-          if (componentData) {
-            componentType = componentData.type.trim();
-          }
-          
-          component = await Component.create({
-            name: componentName,
-            type: componentType,
-            description: `Imported component: ${componentName}`
-          });
-          results.componentsCreated++;
-        }
-        
-        // 将组件存储到已处理的组件映射中
-        processedComponents.set(componentName, component);
-      } catch (error) {
-        results.errors.push({
-          item: { name: componentName },
-          error: `Failed to process component ${componentName}: ${error.message}`
-        });
-      }
-    }
-    
-    // 然后处理所有组件（主要是为了更新已有组件的类型信息）
+    // 逐条处理每条记录，确保每条记录独立处理，不提前扫描所有记录
     for (const item of data) {
       try {
-        // 处理组件名称
         const componentName = item.name.trim();
         const componentType = item.type.trim();
-        
-        // 获取组件
-        let component = processedComponents.get(componentName);
-        if (!component) {
-          component = await Component.findOne({ where: { name: componentName } });
-          // 如果刚从数据库找到，也要加入processedComponents
-          if (component) {
-            processedComponents.set(componentName, component);
-          }
-        }
-        
-        // 如果组件存在但类型不同，更新类型
-        if (component && component.type === 'unknown' && componentType !== 'unknown') {
-          await component.update({ type: componentType });
-        }
-        
-        // 将组件存储到已处理的组件映射中
-        if (component && !processedComponents.has(componentName)) {
-          processedComponents.set(componentName, component);
-        }
-      } catch (error) {
-        results.errors.push({
-          item: item,
-          error: `Failed to process component ${item.name}: ${error.message}`
-        });
-      }
-    }
-
-    // 然后处理所有依赖关系
-    for (const item of data) {
-      try {
         const sourceName = item.source.trim();
         const destinationName = item.destination.trim();
         
-        // 获取源组件和目标组件
-        let sourceComponent = processedComponents.get(sourceName);
-        let destinationComponent = processedComponents.get(destinationName);
+        // 处理主组件（name字段）
+        let mainComponent = processedComponents.get(componentName);
+        if (!mainComponent) {
+          mainComponent = await Component.findOne({ where: { name: componentName } });
+          if (!mainComponent) {
+            // 创建主组件
+            mainComponent = await Component.create({
+              name: componentName,
+              type: componentType,
+              description: `Imported component: ${componentName}`
+            });
+            results.componentsCreated++;
+          }
+          processedComponents.set(componentName, mainComponent);
+        } else if (mainComponent.type === 'unknown' && componentType !== 'unknown') {
+          // 如果组件已存在但类型是unknown，更新类型
+          await mainComponent.update({ type: componentType });
+        }
         
-        // 如果源组件不存在，尝试从数据库中查找
+        // 处理源组件（source字段）
+        let sourceComponent = processedComponents.get(sourceName);
         if (!sourceComponent) {
           sourceComponent = await Component.findOne({ where: { name: sourceName } });
-          if (sourceComponent) {
-            processedComponents.set(sourceName, sourceComponent);
+          if (!sourceComponent) {
+            // 创建源组件
+            sourceComponent = await Component.create({
+              name: sourceName,
+              type: 'unknown',
+              description: `Auto-created component: ${sourceName}`
+            });
+            results.componentsCreated++;
           }
-        }
-        
-        // 如果目标组件不存在，尝试从数据库中查找
-        if (!destinationComponent) {
-          destinationComponent = await Component.findOne({ where: { name: destinationName } });
-          if (destinationComponent) {
-            processedComponents.set(destinationName, destinationComponent);
-          }
-        }
-        
-        // 如果源组件或目标组件仍然不存在，则创建它们
-        if (!sourceComponent) {
-          sourceComponent = await Component.create({
-            name: sourceName,
-            type: 'unknown',
-            description: `Auto-created component: ${sourceName}`
-          });
-          results.componentsCreated++;
           processedComponents.set(sourceName, sourceComponent);
         }
         
+        // 处理目标组件（destination字段）
+        let destinationComponent = processedComponents.get(destinationName);
         if (!destinationComponent) {
-          destinationComponent = await Component.create({
-            name: destinationName,
-            type: 'unknown',
-            description: `Auto-created component: ${destinationName}`
-          });
-          results.componentsCreated++;
+          destinationComponent = await Component.findOne({ where: { name: destinationName } });
+          if (!destinationComponent) {
+            // 创建目标组件
+            destinationComponent = await Component.create({
+              name: destinationName,
+              type: 'unknown',
+              description: `Auto-created component: ${destinationName}`
+            });
+            results.componentsCreated++;
+          }
           processedComponents.set(destinationName, destinationComponent);
         }
         
-        // 检查关系是否已存在
-        const existingRelation = await ComponentRelation.findOne({
-          where: {
-            upstreamId: sourceComponent.id,
-            downstreamId: destinationComponent.id
-          }
-        });
-        
-        // 如果关系不存在，则创建新关系
-        if (!existingRelation) {
-          await ComponentRelation.create({
-            upstreamId: sourceComponent.id,
-            downstreamId: destinationComponent.id,
-            relationType: 'data_flow' // 默认关系类型
+        // 为主组件建立上游依赖关系（source -> name）
+        if (sourceName && sourceName !== componentName) {
+          const existingUpstreamRelation = await ComponentRelation.findOne({
+            where: {
+              upstreamId: sourceComponent.id,
+              downstreamId: mainComponent.id
+            }
           });
-          results.relationsCreated++;
+          
+          if (!existingUpstreamRelation) {
+            await ComponentRelation.create({
+              upstreamId: sourceComponent.id,
+              downstreamId: mainComponent.id,
+              relationType: 'data_flow'
+            });
+            results.relationsCreated++;
+          }
+        }
+        
+        // 为主组件建立下游依赖关系（name -> destination）
+        if (destinationName && destinationName !== componentName) {
+          const existingDownstreamRelation = await ComponentRelation.findOne({
+            where: {
+              upstreamId: mainComponent.id,
+              downstreamId: destinationComponent.id
+            }
+          });
+          
+          if (!existingDownstreamRelation) {
+            await ComponentRelation.create({
+              upstreamId: mainComponent.id,
+              downstreamId: destinationComponent.id,
+              relationType: 'data_flow'
+            });
+            results.relationsCreated++;
+          }
         }
       } catch (error) {
         results.errors.push({
           item: item,
-          error: `Failed to process relation ${item.source} -> ${item.destination}: ${error.message}`
+          error: `Failed to process item: ${error.message}`
         });
       }
     }
