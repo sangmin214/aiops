@@ -131,6 +131,10 @@ async function processComponentDependencies(data) {
         let component = processedComponents.get(componentName);
         if (!component) {
           component = await Component.findOne({ where: { name: componentName } });
+          // 如果刚从数据库找到，也要加入processedComponents
+          if (component) {
+            processedComponents.set(componentName, component);
+          }
         }
         
         // 如果组件存在但类型不同，更新类型
@@ -139,7 +143,7 @@ async function processComponentDependencies(data) {
         }
         
         // 将组件存储到已处理的组件映射中
-        if (component) {
+        if (component && !processedComponents.has(componentName)) {
           processedComponents.set(componentName, component);
         }
       } catch (error) {
@@ -160,33 +164,40 @@ async function processComponentDependencies(data) {
         let sourceComponent = processedComponents.get(sourceName);
         let destinationComponent = processedComponents.get(destinationName);
         
-        // 如果源组件不存在，尝试从数据库中查找或创建
+        // 如果源组件不存在，尝试从数据库中查找
         if (!sourceComponent) {
           sourceComponent = await Component.findOne({ where: { name: sourceName } });
-          if (!sourceComponent) {
-            // 创建源组件（使用默认类型）
-            sourceComponent = await Component.create({
-              name: sourceName,
-              type: 'unknown',
-              description: `Auto-created component: ${sourceName}`
-            });
-            results.componentsCreated++;
+          if (sourceComponent) {
+            processedComponents.set(sourceName, sourceComponent);
           }
+        }
+        
+        // 如果目标组件不存在，尝试从数据库中查找
+        if (!destinationComponent) {
+          destinationComponent = await Component.findOne({ where: { name: destinationName } });
+          if (destinationComponent) {
+            processedComponents.set(destinationName, destinationComponent);
+          }
+        }
+        
+        // 如果源组件或目标组件仍然不存在，则创建它们
+        if (!sourceComponent) {
+          sourceComponent = await Component.create({
+            name: sourceName,
+            type: 'unknown',
+            description: `Auto-created component: ${sourceName}`
+          });
+          results.componentsCreated++;
           processedComponents.set(sourceName, sourceComponent);
         }
         
-        // 如果目标组件不存在，尝试从数据库中查找或创建
         if (!destinationComponent) {
-          destinationComponent = await Component.findOne({ where: { name: destinationName } });
-          if (!destinationComponent) {
-            // 创建目标组件（使用默认类型）
-            destinationComponent = await Component.create({
-              name: destinationName,
-              type: 'unknown',
-              description: `Auto-created component: ${destinationName}`
-            });
-            results.componentsCreated++;
-          }
+          destinationComponent = await Component.create({
+            name: destinationName,
+            type: 'unknown',
+            description: `Auto-created component: ${destinationName}`
+          });
+          results.componentsCreated++;
           processedComponents.set(destinationName, destinationComponent);
         }
         
