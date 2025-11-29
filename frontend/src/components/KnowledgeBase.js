@@ -154,10 +154,7 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
         alert('SOP文档导入成功！');
         setImportFile(null);
         setShowImportForm(false);
-        // 触发父组件刷新数据
-        if (onAdd) {
-          onAdd(data.entry);
-        }
+        // 不再调用onAdd，因为父组件应该通过其他方式（如轮询或WebSocket）获取更新
       } else {
         alert(`导入失败: ${data.error}`);
       }
