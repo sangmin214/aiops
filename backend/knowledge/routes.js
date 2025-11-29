@@ -15,15 +15,18 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024, // 限制文件大小为5MB
   },
   fileFilter: (req, file, cb) => {
+    // 确保文件名正确解码
+    const fileName = file.originalname;
+    
     // 接受Word文档和Markdown文档
     if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
         file.mimetype === 'application/msword' ||
         file.mimetype === 'text/markdown' ||
         file.mimetype === 'text/plain' ||
-        file.originalname.endsWith('.docx') ||
-        file.originalname.endsWith('.doc') ||
-        file.originalname.endsWith('.md') ||
-        file.originalname.endsWith('.markdown')) {
+        fileName.endsWith('.docx') ||
+        fileName.endsWith('.doc') ||
+        fileName.endsWith('.md') ||
+        fileName.endsWith('.markdown')) {
       cb(null, true);
     } else {
       cb(new Error('只支持Word文档格式 (.doc, .docx) 和 Markdown格式 (.md)'), false);
@@ -236,11 +239,13 @@ router.post('/knowledge/import-document', upload.single('file'), async (req, res
       return res.status(400).json({ error: '请上传文档文件' });
     }
 
-    console.log('Processing document import...', req.file.originalname);
+    // 确保文件名正确解码，特别是对于中文文件名
+    const fileName = req.file.originalname;
+    console.log('Processing document import...', fileName);
     
     // 检查是否已存在相同文件名的SOP
     const existingEntry = await KnowledgeEntry.findOne({
-      problem: `SOP文档导入: ${req.file.originalname}`
+      problem: `SOP文档导入: ${fileName}`
     });
     
     if (existingEntry) {
@@ -253,10 +258,10 @@ router.post('/knowledge/import-document', upload.single('file'), async (req, res
     let sopInfo;
     
     // 根据文件扩展名判断文件类型并解析
-    if (req.file.originalname.endsWith('.doc') || req.file.originalname.endsWith('.docx')) {
+    if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) {
       // 解析Word文档
       sopInfo = await parseWordDocument(req.file.buffer);
-    } else if (req.file.originalname.endsWith('.md') || req.file.originalname.endsWith('.markdown')) {
+    } else if (fileName.endsWith('.md') || fileName.endsWith('.markdown')) {
       // 解析Markdown文档
       sopInfo = parseMarkdownDocument(req.file.buffer);
     } else {
@@ -264,7 +269,7 @@ router.post('/knowledge/import-document', upload.single('file'), async (req, res
     }
     
     // 为去重处理，将文件名添加到问题描述中
-    sopInfo.problem = `SOP文档导入: ${req.file.originalname}`;
+    sopInfo.problem = `SOP文档导入: ${fileName}`;
     
     console.log('Parsed SOP info:', sopInfo);
     
