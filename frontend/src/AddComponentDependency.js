@@ -6,6 +6,7 @@ const AddComponentDependency = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [selectedComponents, setSelectedComponents] = useState([]); // 用于跟踪选中的组件
 
   // 表单状态
   const [formData, setFormData] = useState({
@@ -173,6 +174,57 @@ const AddComponentDependency = () => {
       relationType: 'data_flow'
     });
     setEditingComponent(component);
+  };
+
+  // 处理组件选择
+  const handleComponentSelect = (componentId) => {
+    setSelectedComponents(prev => {
+      if (prev.includes(componentId)) {
+        // 如果已选中，则移除
+        return prev.filter(id => id !== componentId);
+      } else {
+        // 如果未选中，则添加
+        return [...prev, componentId];
+      }
+    });
+  };
+
+  // 全选/取消全选
+  const handleSelectAll = () => {
+    if (selectedComponents.length === components.length) {
+      // 如果已经全选，则取消全选
+      setSelectedComponents([]);
+    } else {
+      // 如果没有全选，则全选所有组件
+      setSelectedComponents(components.map(component => component.id));
+    }
+  };
+
+  // 批量删除组件
+  const handleBatchDelete = async () => {
+    if (selectedComponents.length === 0) {
+      setError('请至少选择一个组件进行删除');
+      return;
+    }
+    
+    if (window.confirm(`确定要删除选中的 ${selectedComponents.length} 个组件吗？`)) {
+      try {
+        setLoading(true);
+        setError('');
+        
+        // 并行删除所有选中的组件
+        const deletePromises = selectedComponents.map(id => deleteComponent(id));
+        await Promise.all(deletePromises);
+        
+        setSuccess(`成功删除 ${selectedComponents.length} 个组件！`);
+        setSelectedComponents([]); // 清空选中状态
+        await fetchComponentsWithDependencies(); // 刷新组件列表
+      } catch (err) {
+        setError(`批量删除失败: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   // 添加新的依赖关系（暂时未使用）
@@ -626,12 +678,38 @@ const AddComponentDependency = () => {
       
       {/* 已有组件列表 */}
       <div style={{ marginTop: '20px' }}>
-        <h3>已有组件列表</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <h3>已有组件列表</h3>
+          {selectedComponents.length > 0 && (
+            <button 
+              onClick={handleBatchDelete}
+              disabled={loading}
+              style={{ 
+                padding: '5px 10px', 
+                backgroundColor: '#dc3545', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '3px', 
+                cursor: loading ? 'not-allowed' : 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              批量删除 ({selectedComponents.length})
+            </button>
+          )}
+        </div>
         {components.length > 0 ? (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f8f9fa' }}>
+                  <th style={{ border: '1px solid #dee2e6', padding: '6px', width: '40px' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={selectedComponents.length === components.length && components.length > 0}
+                      onChange={handleSelectAll}
+                    />
+                  </th>
                   <th style={{ border: '1px solid #dee2e6', padding: '6px' }}>ID</th>
                   <th style={{ border: '1px solid #dee2e6', padding: '6px' }}>名称</th>
                   <th style={{ border: '1px solid #dee2e6', padding: '6px' }}>类型</th>
@@ -642,7 +720,14 @@ const AddComponentDependency = () => {
               </thead>
               <tbody>
                 {components.map(component => (
-                  <tr key={component.id}>
+                  <tr key={component.id} style={{ backgroundColor: selectedComponents.includes(component.id) ? '#e3f2fd' : 'transparent' }}>
+                    <td style={{ border: '1px solid #dee2e6', padding: '6px', textAlign: 'center' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={selectedComponents.includes(component.id)}
+                        onChange={() => handleComponentSelect(component.id)}
+                      />
+                    </td>
                     <td style={{ border: '1px solid #dee2e6', padding: '6px' }}>{component.id}</td>
                     <td style={{ border: '1px solid #dee2e6', padding: '6px' }}>{component.name}</td>
                     <td style={{ border: '1px solid #dee2e6', padding: '6px' }}>{component.type}</td>
