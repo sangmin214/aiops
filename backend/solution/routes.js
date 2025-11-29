@@ -47,7 +47,7 @@ router.post('/solutions', async (req, res) => {
  */
 router.get('/solutions', async (req, res) => {
   try {
-    const { page = 1, limit = 20, search, tag } = req.query;
+    const { page = 1, limit = 10, search, tag } = req.query;
     const offset = (page - 1) * limit;
     
     // 构建查询条件

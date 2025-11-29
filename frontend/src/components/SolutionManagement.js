@@ -17,7 +17,7 @@ const SolutionManagement = ({ solutionToAdd, onSolutionAdded }) => {
     setError('');
     
     try {
-      const response = await fetch(`/api/solutions?page=${currentPage}&search=${searchTerm}`);
+      const response = await fetch(`/api/solutions?page=${currentPage}&limit=10&search=${searchTerm}`);
       const data = await response.json();
       
       if (response.ok) {
