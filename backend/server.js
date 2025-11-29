@@ -38,6 +38,9 @@ sequelize.sync()
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// 导入命令历史模型
+const CommandHistory = require('./agent/commandHistoryModel.js');
+
 // 创建HTTP服务器
 const server = http.createServer(app);
 
@@ -273,13 +276,25 @@ app.get('/api/debug/agent/:agentId', (req, res) => {
 });
 
 // 添加获取命令执行结果的API
-app.get('/api/agent/results', (req, res) => {
+app.get('/api/agent/results', async (req, res) => {
   try {
-    // 返回最近的命令执行结果，按时间倒序排列
-    const sortedResults = [...commandResults].sort((a, b) => 
-      new Date(b.timestamp) - new Date(a.timestamp)
-    );
-    res.json(sortedResults);
+    // 从数据库获取命令执行历史，按时间倒序排列，限制返回最近100条
+    const history = await CommandHistory.findAll({
+      order: [['timestamp', 'DESC']],
+      limit: 100
+    });
+    
+    // 格式化结果
+    const formattedHistory = history.map(item => ({
+      id: item.id,
+      agentId: item.agentId,
+      command: item.command,
+      result: item.result ? JSON.parse(item.result) : null,
+      error: item.error ? JSON.parse(item.error) : null,
+      timestamp: item.timestamp
+    }));
+    
+    res.json(formattedHistory);
   } catch (error) {
     console.error('Error fetching command results:', error);
     res.status(500).json({ error: 'Failed to fetch command results' });
@@ -287,9 +302,16 @@ app.get('/api/agent/results', (req, res) => {
 });
 
 // 添加清除命令执行结果的API
-app.delete('/api/agent/results', (req, res) => {
+app.delete('/api/agent/results', async (req, res) => {
   try {
+    // 清除内存中的命令结果
     commandResults = [];
+    
+    // 同时清除数据库中的记录
+    await CommandHistory.destroy({
+      where: {}
+    });
+    
     res.json({ message: 'Command results cleared successfully' });
   } catch (error) {
     console.error('Error clearing command results:', error);
@@ -336,7 +358,7 @@ wss.on('connection', (ws, req) => {
           console.log(`Received result from agent ${message.agentId} for command: ${message.command}`);
           console.log('Result:', message.result || message.error);
           
-          // 存储命令执行结果
+          // 存储命令执行结果到内存
           const resultEntry = {
             id: Date.now().toString(),
             agentId: message.agentId,
@@ -346,6 +368,17 @@ wss.on('connection', (ws, req) => {
             timestamp: new Date()
           };
           commandResults.push(resultEntry);
+          
+          // 同时保存到数据库
+          CommandHistory.create({
+            agentId: message.agentId,
+            command: message.command,
+            result: message.result ? JSON.stringify(message.result) : null,
+            error: message.error ? JSON.stringify(message.error) : null,
+            timestamp: new Date()
+          }).catch(error => {
+            console.error('Error saving command history to database:', error);
+          });
           
           // 只保留最近的100个结果，防止内存溢出
           if (commandResults.length > 100) {
