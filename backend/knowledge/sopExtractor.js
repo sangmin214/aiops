@@ -30,8 +30,8 @@ function extractSOPInfo(textContent) {
   }
   
   // 如果文本很长，可能需要截断以适应数据库字段限制
-  if (solution.length > 5000) {
-    solution = solution.substring(0, 5000) + '... (内容已截断)';
+  if (solution.length > 10000) {
+    solution = solution.substring(0, 10000) + '... (内容已截断)';
   }
   
   return {
