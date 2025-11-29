@@ -10,6 +10,8 @@ const SolutionManagement = ({ solutionToAdd, onSolutionAdded }) => {
   const [selectedSolution, setSelectedSolution] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('view'); // 'view', 'create', 'edit'
+  const [sortBy, setSortBy] = useState('createdAt'); // 默认按创建时间排序
+  const [sortOrder, setSortOrder] = useState('DESC'); // 默认降序
 
   // 获取解决方案列表
   const fetchSolutions = async () => {
@@ -17,7 +19,7 @@ const SolutionManagement = ({ solutionToAdd, onSolutionAdded }) => {
     setError('');
     
     try {
-      const response = await fetch(`/api/solutions?page=${currentPage}&limit=10&search=${searchTerm}`);
+      const response = await fetch(`/api/solutions?page=${currentPage}&limit=10&search=${searchTerm}&sortBy=${sortBy}&sortOrder=${sortOrder}`);
       const data = await response.json();
       
       if (response.ok) {
@@ -116,6 +118,8 @@ const SolutionManagement = ({ solutionToAdd, onSolutionAdded }) => {
       
       if (response.ok) {
         alert('解决方案执行已启动，请在Agent管理页面查看执行结果');
+        // 重新获取解决方案列表以更新执行次数和时间
+        fetchSolutions();
         return { success: true };
       } else {
         return { success: false, error: data.error };
@@ -134,7 +138,7 @@ const SolutionManagement = ({ solutionToAdd, onSolutionAdded }) => {
   // 页面加载时获取数据
   useEffect(() => {
     fetchSolutions();
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, sortBy, sortOrder]);
   
   // 处理预填充数据
   useEffect(() => {
@@ -200,8 +204,8 @@ const SolutionManagement = ({ solutionToAdd, onSolutionAdded }) => {
       {/* 搜索和操作栏 */}
       <div className="bg-white shadow-xl rounded-lg p-6 mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-          <form onSubmit={handleSearch} className="flex-1">
-            <div className="flex">
+          <div className="flex-1 flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
+            <form onSubmit={handleSearch} className="flex-1 flex">
               <input
                 type="text"
                 placeholder="搜索解决方案..."
@@ -215,8 +219,29 @@ const SolutionManagement = ({ solutionToAdd, onSolutionAdded }) => {
               >
                 搜索
               </button>
+            </form>
+            
+            {/* 排序选项 */}
+            <div className="flex items-center space-x-2">
+              <label className="text-sm text-gray-700">排序:</label>
+              <select
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [field, order] = e.target.value.split('-');
+                  setSortBy(field);
+                  setSortOrder(order);
+                }}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="createdAt-DESC">创建时间（最新）</option>
+                <option value="createdAt-ASC">创建时间（最早）</option>
+                <option value="executionCount-DESC">执行次数（最多）</option>
+                <option value="executionCount-ASC">执行次数（最少）</option>
+                <option value="lastExecutedAt-DESC">最后执行（最新）</option>
+                <option value="lastExecutedAt-ASC">最后执行（最早）</option>
+              </select>
             </div>
-          </form>
+          </div>
           
           <button
             onClick={openCreateModal}
@@ -275,6 +300,12 @@ const SolutionManagement = ({ solutionToAdd, onSolutionAdded }) => {
                       可执行
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      执行次数
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      最后执行时间
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       创建时间
                     </th>
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -303,6 +334,12 @@ const SolutionManagement = ({ solutionToAdd, onSolutionAdded }) => {
                             否
                           </span>
                         )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {solution.executionCount || 0}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {solution.lastExecutedAt ? formatTime(solution.lastExecutedAt) : '未执行'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatTime(solution.createdAt)}
@@ -405,6 +442,12 @@ const SolutionModal = ({ solution, mode, onClose, onCreate, onUpdate, onCopy }) 
       source: 'manual'
     }
   );
+  
+  // 格式化时间函数
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('zh-CN');
+  };
   
   // 当solution变化时更新表单数据
   useEffect(() => {
@@ -599,18 +642,36 @@ const SolutionModal = ({ solution, mode, onClose, onCreate, onUpdate, onCopy }) 
               )}
             </div>
 
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                name="isExecutable"
-                checked={formData.isExecutable}
-                onChange={handleChange}
-                disabled={mode === 'view'}
-                className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
-              />
-              <label className="ml-2 block text-sm text-gray-700">
-                可执行解决方案
-              </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">可执行</label>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="isExecutable"
+                    checked={formData.isExecutable}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    disabled={mode === 'view'}
+                  />
+                  <span className="ml-2 text-sm text-gray-900">是可执行解决方案</span>
+                </div>
+              </div>
+              {/* 显示执行次数和最后执行时间（只读） */}
+              {mode !== 'create' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">执行次数</label>
+                    <div className="text-sm text-gray-900 py-2">{solution?.executionCount || 0}</div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">最后执行时间</label>
+                    <div className="text-sm text-gray-900 py-2">
+                      {solution?.lastExecutedAt ? formatTime(solution.lastExecutedAt) : '未执行'}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {formData.isExecutable && (

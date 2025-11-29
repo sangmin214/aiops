@@ -48,6 +48,19 @@ const Solution = sequelize.define('Solution', {
     type: DataTypes.INTEGER,
     defaultValue: 1,
     comment: '版本号'
+  },
+  // 添加执行记录相关字段，使用下划线命名以匹配数据库
+  executionCount: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    field: 'executioncount', // 显式指定数据库字段名
+    comment: '执行次数'
+  },
+  lastExecutedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'lastexecutedat', // 显式指定数据库字段名
+    comment: '最后执行时间'
   }
 }, {
   tableName: 'solutions',
@@ -61,6 +74,13 @@ const Solution = sequelize.define('Solution', {
     },
     {
       fields: ['createdAt']
+    },
+    // 添加执行次数索引，便于排序
+    {
+      fields: ['executioncount']
+    },
+    {
+      fields: ['lastexecutedat']
     }
   ]
 });

@@ -47,7 +47,7 @@ router.post('/solutions', async (req, res) => {
  */
 router.get('/solutions', async (req, res) => {
   try {
-    const { page = 1, limit = 10, search, tag } = req.query;
+    const { page = 1, limit = 10, search, tag, sortBy = 'createdAt', sortOrder = 'DESC' } = req.query;
     const offset = (page - 1) * limit;
     
     // 构建查询条件
@@ -68,10 +68,17 @@ router.get('/solutions', async (req, res) => {
       };
     }
     
+    // 验证排序字段和顺序
+    const validSortFields = ['createdAt', 'executionCount', 'lastExecutedAt'];
+    const validSortOrders = ['ASC', 'DESC'];
+    
+    const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const sortDirection = validSortOrders.includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+    
     const solutions = await Solution.findAndCountAll({
       where,
       include,
-      order: [['createdAt', 'DESC']],
+      order: [[sortField, sortDirection]],
       limit: parseInt(limit),
       offset: parseInt(offset)
     });
@@ -178,6 +185,12 @@ router.post('/solutions/:id/execute', async (req, res) => {
       return res.status(400).json({ error: 'No executable script found' });
     }
     
+    // 更新执行次数和最后执行时间
+    const updatedSolution = await solution.update({
+      executionCount: solution.executionCount + 1,
+      lastExecutedAt: new Date()
+    });
+    
     // 获取已注册的agents
     const { registeredAgents } = require('../server');
       
@@ -212,7 +225,9 @@ router.post('/solutions/:id/execute', async (req, res) => {
         solutionId: solution.id,
         agentId: targetAgentId,
         script: solution.executableScript,
-        status: 'sent'
+        status: 'sent',
+        executionCount: updatedSolution.executionCount, // 返回更新后的执行次数
+        lastExecutedAt: updatedSolution.lastExecutedAt  // 返回最后执行时间
       });
     } else {
       console.log(`WebSocket not ready for agent ${targetAgentId}. Ready state: ${targetAgent.websocket ? targetAgent.websocket.readyState : 'no websocket'}`);
