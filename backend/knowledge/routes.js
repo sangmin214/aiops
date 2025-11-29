@@ -6,6 +6,7 @@ const KnowledgeEntry = require('./models');
 const { generateKnowledgeEmbedding } = require('./embedding');
 const { addKnowledgeEntry } = require('./qdrant');
 const { parseWordDocument } = require('./wordImport');
+const { parseMarkdownDocument } = require('./markdownImport');
 
 // 配置multer用于文件上传
 const upload = multer({
@@ -14,14 +15,18 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024, // 限制文件大小为5MB
   },
   fileFilter: (req, file, cb) => {
-    // 只接受Word文档
+    // 接受Word文档和Markdown文档
     if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
         file.mimetype === 'application/msword' ||
+        file.mimetype === 'text/markdown' ||
+        file.mimetype === 'text/plain' ||
         file.originalname.endsWith('.docx') ||
-        file.originalname.endsWith('.doc')) {
+        file.originalname.endsWith('.doc') ||
+        file.originalname.endsWith('.md') ||
+        file.originalname.endsWith('.markdown')) {
       cb(null, true);
     } else {
-      cb(new Error('只支持Word文档格式 (.doc, .docx)'), false);
+      cb(new Error('只支持Word文档格式 (.doc, .docx) 和 Markdown格式 (.md)'), false);
     }
   }
 });
@@ -221,20 +226,46 @@ router.put('/knowledge/:id', async (req, res) => {
 });
 
 /**
- * 导入Word格式的SOP文档
- * @route POST /api/knowledge/import-word
- * @param {File} file - Word文档文件
+ * 导入Word或Markdown格式的SOP文档
+ * @route POST /api/knowledge/import-document
+ * @param {File} file - Word或Markdown文档文件
  */
-router.post('/knowledge/import-word', upload.single('file'), async (req, res) => {
+router.post('/knowledge/import-document', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: '请上传Word文档文件' });
+      return res.status(400).json({ error: '请上传文档文件' });
     }
 
-    console.log('Processing Word document import...');
+    console.log('Processing document import...', req.file.originalname);
     
-    // 解析Word文档
-    const sopInfo = await parseWordDocument(req.file.buffer);
+    // 检查是否已存在相同文件名的SOP
+    const existingEntry = await KnowledgeEntry.findOne({
+      problem: `SOP文档导入: ${req.file.originalname}`
+    });
+    
+    if (existingEntry) {
+      return res.status(409).json({ 
+        error: '同名SOP文档已存在', 
+        entry: existingEntry 
+      });
+    }
+    
+    let sopInfo;
+    
+    // 根据文件扩展名判断文件类型并解析
+    if (req.file.originalname.endsWith('.doc') || req.file.originalname.endsWith('.docx')) {
+      // 解析Word文档
+      sopInfo = await parseWordDocument(req.file.buffer);
+    } else if (req.file.originalname.endsWith('.md') || req.file.originalname.endsWith('.markdown')) {
+      // 解析Markdown文档
+      sopInfo = parseMarkdownDocument(req.file.buffer);
+    } else {
+      return res.status(400).json({ error: '不支持的文件格式，仅支持Word (.doc, .docx) 和 Markdown (.md) 格式' });
+    }
+    
+    // 为去重处理，将文件名添加到问题描述中
+    sopInfo.problem = `SOP文档导入: ${req.file.originalname}`;
+    
     console.log('Parsed SOP info:', sopInfo);
     
     // 创建知识库条目
@@ -266,7 +297,7 @@ router.post('/knowledge/import-word', upload.single('file'), async (req, res) =>
       entry: savedEntry
     });
   } catch (error) {
-    console.error('Error importing Word document:', error);
+    console.error('Error importing document:', error);
     res.status(500).json({ error: `导入SOP文档失败: ${error.message}` });
   }
 });

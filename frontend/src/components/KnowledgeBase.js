@@ -113,8 +113,8 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
     const file = e.target.files[0];
     if (file) {
       // 检查文件类型
-      if (!file.name.endsWith('.doc') && !file.name.endsWith('.docx')) {
-        alert('请选择Word文档文件 (.doc 或 .docx)');
+      if (!file.name.endsWith('.doc') && !file.name.endsWith('.docx') && !file.name.endsWith('.md') && !file.name.endsWith('.markdown')) {
+        alert('请选择Word文档文件 (.doc 或 .docx) 或 Markdown文件 (.md)');
         return;
       }
       
@@ -133,7 +133,7 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
     e.preventDefault();
     
     if (!importFile) {
-      alert('请选择一个Word文档文件');
+      alert('请选择一个文档文件');
       return;
     }
     
@@ -143,7 +143,7 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
       const formData = new FormData();
       formData.append('file', importFile);
       
-      const response = await fetch('http://localhost:3001/api/knowledge/import-word', {
+      const response = await fetch('http://localhost:3001/api/knowledge/import-document', {
         method: 'POST',
         body: formData,
       });
@@ -156,7 +156,11 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
         setShowImportForm(false);
         // 不再调用onAdd，因为父组件应该通过其他方式（如轮询或WebSocket）获取更新
       } else {
-        alert(`导入失败: ${data.error}`);
+        if (response.status === 409) {
+          alert(`导入失败: ${data.error}\n\n您可以选择更新现有的同名SOP文档，或者重命名当前文件后重新导入。`);
+        } else {
+          alert(`导入失败: ${data.error}`);
+        }
       }
     } catch (error) {
       console.error('导入错误:', error);
@@ -225,12 +229,12 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
 
       {showImportForm && (
         <form onSubmit={handleImportSubmit} className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
-          <h4 className="text-lg font-medium text-gray-800 mb-3">导入Word格式SOP文档</h4>
+          <h4 className="text-lg font-medium text-gray-800 mb-3">导入Word或Markdown格式SOP文档</h4>
           <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">选择Word文档</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">选择文档文件</label>
             <input
               type="file"
-              accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              accept=".doc,.docx,.md,.markdown,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/markdown,text/plain"
               onChange={handleFileChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
