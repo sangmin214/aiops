@@ -41,10 +41,11 @@ const upload = multer({
  * @param {string} problem - 问题描述
  * @param {string} rootCause - 根本原因分析
  * @param {string} solution - 解决方案
+ * @param {number} rating - 评分 (1-5星)
  */
 router.post('/knowledge', async (req, res) => {
   try {
-    const { problem, rootCause, solution } = req.body;
+    const { problem, rootCause, solution, rating } = req.body;
     
     // 验证必需字段
     if (!problem || !rootCause || !solution) {
@@ -53,13 +54,14 @@ router.post('/knowledge', async (req, res) => {
       });
     }
     
-    console.log('Creating new knowledge entry:', { problem, rootCause, solution });
+    console.log('Creating new knowledge entry:', { problem, rootCause, solution, rating });
     
     // 创建知识库条目
     const knowledgeEntry = new KnowledgeEntry({
       problem,
       rootCause,
-      solution
+      solution,
+      rating: rating || null // 如果没有提供评分，则设为null
     });
     
     // 生成向量嵌入
@@ -203,10 +205,11 @@ router.delete('/knowledge/:id', async (req, res) => {
  * @param {string} problem - 问题描述
  * @param {string} rootCause - 根本原因分析
  * @param {string} solution - 解决方案
+ * @param {number} rating - 评分 (1-5星)
  */
 router.put('/knowledge/:id', async (req, res) => {
   try {
-    const { problem, rootCause, solution } = req.body;
+    const { problem, rootCause, solution, rating } = req.body;
     
     // 验证必需字段
     if (!problem || !rootCause || !solution) {
@@ -215,7 +218,7 @@ router.put('/knowledge/:id', async (req, res) => {
       });
     }
     
-    console.log('Updating knowledge entry:', req.params.id, { problem, rootCause, solution });
+    console.log('Updating knowledge entry:', req.params.id, { problem, rootCause, solution, rating });
     
     // 查找并更新知识库条目
     const knowledgeEntry = await KnowledgeEntry.findById(req.params.id);
@@ -227,6 +230,7 @@ router.put('/knowledge/:id', async (req, res) => {
     knowledgeEntry.problem = problem;
     knowledgeEntry.rootCause = rootCause;
     knowledgeEntry.solution = solution;
+    knowledgeEntry.rating = rating !== undefined ? rating : knowledgeEntry.rating; // 只有当rating被提供时才更新
     
     // 重新生成向量嵌入
     const embedding = await generateKnowledgeEmbedding(knowledgeEntry);

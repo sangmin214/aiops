@@ -20,6 +20,14 @@ const KnowledgeEntrySchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  // 评分 (1-5星)
+  rating: {
+    type: Number,
+    required: false,
+    min: 1,
+    max: 5,
+    default: null
+  },
   // 向量嵌入
   embedding: {
     type: [Number],

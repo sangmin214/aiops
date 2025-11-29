@@ -7,7 +7,8 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
   const [newEntry, setNewEntry] = useState({
     problem: '',
     rootCause: '',
-    solution: ''
+    solution: '',
+    rating: null // 添加评分字段
   });
   const [searchQuery, setSearchQuery] = useState(''); // 添加搜索查询状态
   const [searchResults, setSearchResults] = useState([]); // 添加搜索结果状态
@@ -40,7 +41,7 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
     const { name, value } = e.target;
     setNewEntry(prev => ({
       ...prev,
-      [name]: value
+      [name]: name === 'rating' ? (value ? parseInt(value) : null) : value
     }));
   };
 
@@ -107,7 +108,8 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
     setNewEntry({
       problem: entry.problem,
       rootCause: entry.rootCause,
-      solution: entry.solution
+      solution: entry.solution,
+      rating: entry.rating || null // 添加评分字段
     });
     setEditingId(entry._id);
     setShowForm(true);
@@ -369,6 +371,23 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
             />
           </div>
           
+          <div className="mb-3">
+            <label className="block text-sm font-medium text-gray-700 mb-1">评分 (1-5星)</label>
+            <select
+              name="rating"
+              value={newEntry.rating || ''}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">未评分</option>
+              <option value="1">★☆☆☆☆ (1星)</option>
+              <option value="2">★★☆☆☆ (2星)</option>
+              <option value="3">★★★☆☆ (3星)</option>
+              <option value="4">★★★★☆ (4星)</option>
+              <option value="5">★★★★★ (5星)</option>
+            </select>
+          </div>
+          
           <div className="flex space-x-2">
             <button
               type="submit"
@@ -397,6 +416,11 @@ const KnowledgeBase = ({ entries, onAdd, onDelete, onUpdate, loading, onConvertT
                   <h4 className="font-medium text-gray-900">{entry.problem}</h4>
                   <p className="text-sm text-gray-600 mt-1"><span className="font-medium">根本原因:</span> {entry.rootCause}</p>
                   <p className="text-sm text-gray-800 mt-2"><span className="font-medium">解决方案:</span> {entry.solution}</p>
+                  {entry.rating && (
+                    <p className="text-sm text-gray-700 mt-2">
+                      <span className="font-medium">评分:</span> {'★'.repeat(entry.rating) + '☆'.repeat(5 - entry.rating)} ({entry.rating}星)
+                    </p>
+                  )}
                 </div>
                 <div className="ml-4 flex space-x-2">
                   <button
